@@ -27,38 +27,48 @@ Configuration Items
 
 Basic Example
 -------------
-```
-    # Create the Flask 'app'
-    from flask import Flask
-    app = Flask(__name__)
+```python
+# Create the Flask 'app'
+from flask import Flask
+app = Flask(__name__)
 
-    # Set the configuration items manually for the example
-    app.config['TRACK_USAGE_USE_FREEGEOIP'] = False
-    app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
+# Set the configuration items manually for the example
+app.config['TRACK_USAGE_USE_FREEGEOIP'] = False
+app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
 
-    # We will just print out the data for the example
-    def storage(data):
-        print data
+# We will just print out the data for the example
+def storage(data):
+    print data
 
-    from flask.ext.track_usage import TrackUsage
+from flask.ext.track_usage import TrackUsage
 
-    # Make an instance of the extension
-    t = TrackUsage(app, storage)
+# Make an instance of the extension
+t = TrackUsage(app, storage)
 
-    # Include the view in the metrics
-    @t.include
-    @app.route('/')
-    def index():
-        return "Hello"
+# Include the view in the metrics
+@t.include
+@app.route('/')
+def index():
+    return "Hello"
 
-    # Run the application!
-    app.run(debug=True)
+# Run the application!
+app.run(debug=True)
 ```
 
 Example Output From Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-```
-{'blueprint': None, 'view_args': {}, 'ip_info': None, 'status': '200 OK', 'user_agent': <UserAgent 'chrome'/26.0.1410.65>, 'remote_addr': '127.0.0.1', 'url': 'http://127.0.0.1:5000/', 'speed': 0.009223, 'authorization': False}
+```python
+{
+    'blueprint': None,
+    'view_args': {},
+    'ip_info': None,
+    'status': '200 OK',
+    'user_agent': <UserAgent 'chrome'/26.0.1410.65>,
+    'remote_addr': '127.0.0.1',
+    'url': 'http://127.0.0.1:5000/',
+    'speed': 0.009223,
+    'authorization': False
+}
 ```
 
 Similar Projects
