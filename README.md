@@ -15,6 +15,16 @@ Requirements
 * Flask: http://flask.pocoo.org/
 * A callable to save the metrics data with
 
+
+Configuration Items
+-------------------
+* TRACK_USAGE_USE_FREEGEOIP
+  * Boolean
+  * If freegeoip.net should be used
+* TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS
+  * include, exclude
+  * If views should be included manually or if views should be manully excluded
+
 Basic Example
 -------------
 ```
@@ -29,6 +39,8 @@ Basic Example
     # We will just print out the data for the example
     def storage(data):
         print data
+
+    from flask.ext.track_usage import TrackUsage
 
     # Make an instance of the extension
     t = TrackUsage(app, storage)
