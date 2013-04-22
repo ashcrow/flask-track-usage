@@ -1,0 +1,12 @@
+language: python
+python:
+  - "2.7"
+before_script:
+  - pip install coverage pep8 --use-mirrors
+install:
+  - pip install -e . --use-mirrors
+script:
+  - pep8 --repeat src/
+#  - nosetests --with-coverage --cover-package=victims_web --cover-min-percentage=0 -v test/*.py
+notifications:
+  email: false
