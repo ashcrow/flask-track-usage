@@ -42,7 +42,7 @@ setup(
     author='Steve Milner',
     description='Basic metrics tracking for the Flask framework.',
     long_description='Basic metrics tracking for the Flask framework.',
-    py_modules=['flask_track_usage'],
+    packages=['src/flask_track_usage'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',
