@@ -77,6 +77,9 @@ class TrackUsage(object):
         self._type = app.config.get(
             'TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS', 'exclude')
 
+        if self._type not in ('include', 'exclude'):
+            raise NotImplementedError(
+                'You must set include or exclude type.')
         app.before_request(self.before_request)
         app.after_request(self.after_request)
 
