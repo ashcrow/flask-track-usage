@@ -98,7 +98,7 @@ class TrackUsage(object):
         else:
             raise NotImplementedError(
                 'You must set include or exclude type.')
-        g.start_time = datetime.datetime.utcnow()
+        g.start_time = datetime.datetime.now()
 
     def after_request(self, response):
         """
@@ -120,6 +120,7 @@ class TrackUsage(object):
             raise NotImplementedError(
                 'You must set include or exclude type.')
 
+        now = datetime.datetime.utcnow()
         data = {
             'url': ctx.request.url,
             'user_agent': ctx.request.user_agent,
@@ -130,7 +131,8 @@ class TrackUsage(object):
             'authorization': bool(ctx.request.authorization),
             'ip_info': None,
             'speed': (
-                datetime.datetime.utcnow() - g.start_time).total_seconds()
+                now - g.start_time).total_seconds(),
+            'date': int(now.strftime('%s'))
         }
         if self._use_freegeoip:
             ip_info = json.loads(urllib.urlopen(

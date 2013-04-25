@@ -32,6 +32,7 @@
 Tests mongodb based storage.
 """
 
+import datetime
 import unittest
 
 COLLECTION = False
@@ -86,6 +87,8 @@ class TestMongoPiggybaclStorage(FlaskTrackUsageTestCase):
         assert result['user_agent']['browser'] is None  # because of testing
         assert result['user_agent']['platform'] is None  # because of testing
         assert result['user_agent']['language'] is None  # because of testing
+        assert type(result['date']) is int
+        datetime.datetime.fromtimestamp(result['date'])
 
 
 @unittest.skipUnless(HAS_PYMONGO, "Requires pymongo")
@@ -122,3 +125,5 @@ class TestMongoStorage(FlaskTrackUsageTestCase):
         assert result['user_agent']['browser'] is None  # because of testing
         assert result['user_agent']['platform'] is None  # because of testing
         assert result['user_agent']['language'] is None  # because of testing
+        assert type(result['date']) is int
+        datetime.datetime.fromtimestamp(result['date'])

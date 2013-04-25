@@ -32,6 +32,8 @@
 Basic data tests.
 """
 
+import datetime
+
 from flask_track_usage import TrackUsage
 
 from . import FlaskTrackUsageTestCase, TestStorage
@@ -66,3 +68,5 @@ class TestData(FlaskTrackUsageTestCase):
         assert result['url'] == 'http://localhost/'
         assert result['authorization'] is False
         assert result['user_agent'].string == ""  # because of testing
+        assert type(result['date']) is int
+        datetime.datetime.fromtimestamp(result['date'])
