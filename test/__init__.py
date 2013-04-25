@@ -35,7 +35,6 @@ Unittests for flask-track-usage.
 import unittest
 
 from flask import Flask
-from flask.ext.track_usage import TrackUsage
 
 
 class TestStorage(object):
@@ -69,41 +68,10 @@ class FlaskTrackUsageTestCase(unittest.TestCase):
         self.app.config['TESTING'] = True
 
         self.client = self.app.test_client()
-
-
-class TestData(FlaskTrackUsageTestCase):
-    """
-    Tests specific to expected data.
-    """
-
-    def setUp(self):
-        """
-        Set up an app to test with.
-        """
-        FlaskTrackUsageTestCase.setUp(self)
         self.app.config['TRACK_USAGE_USE_FREEGEOIP'] = False
         self.app.config[
             'TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'exclude'
-        self.storage = TestStorage()
-        self.track_usage = TrackUsage(self.app, self.storage)
 
         @self.app.route('/')
         def index():
             return "Hello!"
-
-    def test_expected_data(self):
-        """
-        Test that the data is in the expected formart.
-        """
-        self.client.get('/')
-        result = self.storage.get()
-        assert result.__class__ is dict
-        assert result['blueprint'] is None
-        assert result['ip_info'] is None
-        assert result['status'] == 200
-        assert result['remote_addr'] is None  # because of testing
-        assert result['speed'].__class__ is float
-        assert result['view_args'] == {}
-        assert result['url'] == 'http://localhost/'
-        assert result['authorization'] is False
-        assert result['user_agent'].string == ""  # because of testing

@@ -29,49 +29,40 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 """
-Simple storage callables package.
+Basic data tests.
 """
 
+from flask_track_usage import TrackUsage
 
-class Storage(object):
+from . import FlaskTrackUsageTestCase, TestStorage
+
+
+class TestData(FlaskTrackUsageTestCase):
     """
-    Subclass for a more intellegent storage callable.
+    Tests specific to expected data.
     """
 
-    def __init__(self, *args, **kwargs):
+    def setUp(self):
         """
-        Creates the instance and calls set_up.
+        Set up an app to test with.
+        """
+        FlaskTrackUsageTestCase.setUp(self)
+        self.storage = TestStorage()
+        self.track_usage = TrackUsage(self.app, self.storage)
 
-        :Parameters:
-           - `args`: All non-keyword arguments.
-           - `kwargs`: All keyword arguments.
+    def test_expected_data(self):
         """
-        self.set_up(*args, **kwargs)
-
-    def set_up(self, *args, **kwargs):
+        Test that the data is in the expected formart.
         """
-        Sets up the created instance. Should be overridden.
-
-        :Parameters:
-           - `args`: All non-keyword arguments.
-           - `kwargs`: All keyword arguments.
-        """
-        pass
-
-    def store(self, data):
-        """
-        Executed on "function call". Must be overridden.
-
-        :Parameters:
-           - `data`: Data to store.
-        """
-        raise NotImplementedError('store must be implemented.')
-
-    def __call__(self, data):
-        """
-        Maps function call to store.
-
-        :Parameters:
-           - `data`: Data to store.
-        """
-        return self.store(data)
+        self.client.get('/')
+        result = self.storage.get()
+        assert result.__class__ is dict
+        assert result['blueprint'] is None
+        assert result['ip_info'] is None
+        assert result['status'] == 200
+        assert result['remote_addr'] is None  # because of testing
+        assert result['speed'].__class__ is float
+        assert result['view_args'] == {}
+        assert result['url'] == 'http://localhost/'
+        assert result['authorization'] is False
+        assert result['user_agent'].string == ""  # because of testing
