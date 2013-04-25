@@ -64,7 +64,7 @@ Example Output From Example
     'blueprint': None,
     'view_args': {},
     'ip_info': None,
-    'status': '200 OK',
+    'status': 200,
     'user_agent': <UserAgent 'chrome'/26.0.1410.65>,
     'remote_addr': '127.0.0.1',
     'url': 'http://127.0.0.1:5000/',

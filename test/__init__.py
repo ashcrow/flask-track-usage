@@ -100,7 +100,7 @@ class TestData(FlaskTrackUsageTestCase):
         assert result.__class__ is dict
         assert result['blueprint'] is None
         assert result['ip_info'] is None
-        assert result['status'] == '200 OK'
+        assert result['status'] == 200
         assert result['remote_addr'] is None  # because of testing
         assert result['speed'].__class__ is float
         assert result['view_args'] == {}

@@ -122,7 +122,7 @@ class TrackUsage(object):
             'user_agent': ctx.request.user_agent,
             'blueprint': ctx.request.blueprint,
             'view_args': ctx.request.view_args,
-            'status': response.status,
+            'status': response.status_code,
             'remote_addr': ctx.request.remote_addr,
             'authorization': bool(ctx.request.authorization),
             'ip_info': None,
