@@ -15,7 +15,7 @@ Features
 Requirements
 ------------
 * Flask: http://flask.pocoo.org/
-* A callable to save the metrics data with
+* A storage object to save the metrics data with
 
 
 Configuration Items
@@ -39,10 +39,10 @@ app.config['TRACK_USAGE_USE_FREEGEOIP'] = False
 app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
 
 # We will just print out the data for the example
-def storage(data):
-    print data
+from flask_track_usage.storage.printer import PrintStorage
 
-from flask.ext.track_usage import TrackUsage
+# Make an instance of the extension
+t = TrackUsage(app, PrintStorage())
 
 # Make an instance of the extension
 t = TrackUsage(app, storage)

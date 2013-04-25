@@ -167,11 +167,10 @@ if __name__ == '__main__':
     app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
 
     # We will just print out the data for the example
-    def storage(data):
-        print data
+    from flask_track_usage.storage.printer import PrintStorage
 
     # Make an instance of the extension
-    t = TrackUsage(app, storage)
+    t = TrackUsage(app, PrintStorage())
 
     # Include the view in the metrics
     @t.include
