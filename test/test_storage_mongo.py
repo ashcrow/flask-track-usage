@@ -69,7 +69,8 @@ class TestData(FlaskTrackUsageTestCase):
         Test that the data is in the expected formart.
         """
         self.client.get('/')
-        result = self.storage.find_one()
+        result = self.storage.collection.find_one()
+        print result
         assert result['blueprint'] is None
         assert result['ip_info'] is None
         assert result['status'] == 200
