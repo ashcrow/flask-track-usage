@@ -32,6 +32,8 @@
 Simple mongodb storage.
 """
 
+import datetime
+
 from flask_track_usage.storage import Storage
 
 
@@ -43,6 +45,7 @@ class _MongoStorage(Storage):
             'language': data['user_agent'].language,
             'platform': data['user_agent'].platform,
         }
+        data['date'] = datetime.datetime.fromtimestamp(data['date'])
         data['user_agent'] = ua_dict
         self.collection.insert(data)
 

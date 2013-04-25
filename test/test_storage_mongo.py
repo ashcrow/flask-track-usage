@@ -87,8 +87,7 @@ class TestMongoPiggybaclStorage(FlaskTrackUsageTestCase):
         assert result['user_agent']['browser'] is None  # because of testing
         assert result['user_agent']['platform'] is None  # because of testing
         assert result['user_agent']['language'] is None  # because of testing
-        assert type(result['date']) is int
-        datetime.datetime.fromtimestamp(result['date'])
+        assert type(result['date']) is datetime.datetime
 
 
 @unittest.skipUnless(HAS_PYMONGO, "Requires pymongo")
@@ -125,5 +124,4 @@ class TestMongoStorage(FlaskTrackUsageTestCase):
         assert result['user_agent']['browser'] is None  # because of testing
         assert result['user_agent']['platform'] is None  # because of testing
         assert result['user_agent']['language'] is None  # because of testing
-        assert type(result['date']) is int
-        datetime.datetime.fromtimestamp(result['date'])
+        assert type(result['date']) is datetime.datetime
