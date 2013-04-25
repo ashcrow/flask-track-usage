@@ -69,7 +69,8 @@ Example Output From Example
     'remote_addr': '127.0.0.1',
     'url': 'http://127.0.0.1:5000/',
     'speed': 0.009223,
-    'authorization': False
+    'authorization': False,
+    'date': 1366936473,
 }
 ```
 

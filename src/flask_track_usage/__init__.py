@@ -98,7 +98,7 @@ class TrackUsage(object):
         else:
             raise NotImplementedError(
                 'You must set include or exclude type.')
-        g.start_time = datetime.datetime.now()
+        g.start_time = datetime.datetime.utcnow()
 
     def after_request(self, response):
         """
