@@ -1,8 +1,10 @@
 language: python
 python:
   - "2.7"
+services:
+  - mongodb
 before_script:
-  - pip install coverage pep8 --use-mirrors
+  - pip install coverage pep8 pymongo --use-mirrors
 install:
   - pip install -e . --use-mirrors
 script:
