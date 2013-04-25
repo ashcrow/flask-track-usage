@@ -34,26 +34,31 @@ Tests mongodb based storage.
 
 import unittest
 
+COLLECTION = False
+HAS_PYMONGO = False
+
 try:
     import pymongo
     HAS_PYMONGO = True
-    COLLECTION = pymongo.MongoClient().test.flask_track_usage
+    DB = 'test'
+    COLL_NAME = 'flask_track_usage'
+    COLLECTION = getattr(getattr(pymongo.MongoClient(), DB), COLL_NAME)
 except ImportError:
     HAS_PYMONGO = False
 except pymongo.errors.ConnectionFailure:
     COLLECTION = False
 
 from flask_track_usage import TrackUsage
-from flask_track_usage.storage.mongo import MongoPiggybackStorage
+from flask_track_usage.storage.mongo import MongoPiggybackStorage, MongoStorage
 
 from . import FlaskTrackUsageTestCase
 
 
 @unittest.skipUnless(HAS_PYMONGO, "Requires pymongo")
 @unittest.skipUnless(COLLECTION, "Requires a running test MongoDB")
-class TestData(FlaskTrackUsageTestCase):
+class TestMongoPiggybaclStorage(FlaskTrackUsageTestCase):
     """
-    Tests specific to expected data.
+    Tests MongoDB storage while using a piggybacked connection.
     """
 
     def setUp(self):
@@ -64,13 +69,48 @@ class TestData(FlaskTrackUsageTestCase):
         self.storage = MongoPiggybackStorage(collection=COLLECTION)
         self.track_usage = TrackUsage(self.app, self.storage)
 
-    def test_expected_data(self):
+    def test_mongo_piggyback_storage(self):
         """
-        Test that the data is in the expected formart.
+        Test MongoPiggybackStorage stores the data the way we expect.
         """
         self.client.get('/')
         result = self.storage.collection.find_one()
-        print result
+        assert result['blueprint'] is None
+        assert result['ip_info'] is None
+        assert result['status'] == 200
+        assert result['remote_addr'] is None  # because of testing
+        assert result['speed'].__class__ is float
+        assert result['view_args'] == {}
+        assert result['url'] == 'http://localhost/'
+        assert result['authorization'] is False
+        assert result['user_agent']['browser'] is None  # because of testing
+        assert result['user_agent']['platform'] is None  # because of testing
+        assert result['user_agent']['language'] is None  # because of testing
+
+
+@unittest.skipUnless(HAS_PYMONGO, "Requires pymongo")
+class TestMongoStorage(FlaskTrackUsageTestCase):
+    """
+    Tests MongoDB storage while using it's own connection.
+    """
+
+    def setUp(self):
+        """
+        Set up an app to test with.
+        """
+        FlaskTrackUsageTestCase.setUp(self)
+        self.storage = MongoStorage(
+            database=DB,
+            collection=COLL_NAME
+        )
+        self.track_usage = TrackUsage(self.app, self.storage)
+
+    def test_mongo_storage(self):
+        """
+        Test that data is stored in MongoDB and retrieved correctly.
+        """
+        self.client.get('/')
+        result = self.storage.collection.find_one()
         assert result['blueprint'] is None
         assert result['ip_info'] is None
         assert result['status'] == 200

@@ -60,3 +60,30 @@ class MongoPiggybackStorage(_MongoStorage):
            - `collection`: A pymongo collection (not database or connection).
         """
         self.collection = collection
+
+
+class MongoStorage(_MongoStorage):
+    """
+    Creates it's own connection for storage.
+    """
+
+    def set_up(
+            self, database, collection, host='127.0.0.1',
+            port=27017, username=None, password=None):
+        """
+        Sets the collection.
+
+        :Parameters:
+           - `database`: Name of the database to use.
+           - `collection`: Name of the collection to use.
+           - `host`: Host to conenct to. Default: 127.0.0.1
+           - `port`: Port to connect to. Default: 27017
+           - `username`: Optional username to authenticate with.
+           - `password`: Optional password to authenticate with.
+        """
+        import pymongo
+        self.connection = pymongo.MongoClient(host, port)
+        self.db = getattr(self.connection, database)
+        if username and password:
+            self.db.authenticate(username, password)
+        self.collection = getattr(self.db, collection)
