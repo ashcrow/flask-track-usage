@@ -36,13 +36,14 @@ from setuptools import setup
 
 setup(
     name='Flask-Track-Usage',
-    version='0.0.1',
+    version='0.0.2',
     url='https://github.com/ashcrow/flask-track-usage',
     license='MBSD',
     author='Steve Milner',
     description='Basic metrics tracking for the Flask framework.',
     long_description='Basic metrics tracking for the Flask framework.',
-    packages=['src/flask_track_usage'],
+    packages=['flask_track_usage'],
+    package_dir={'flask_track_usage': 'src/flask_track_usage'},
     zip_safe=False,
     include_package_data=True,
     platforms='any',
