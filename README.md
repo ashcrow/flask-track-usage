@@ -39,7 +39,8 @@ app.config['TRACK_USAGE_USE_FREEGEOIP'] = False
 app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
 
 # We will just print out the data for the example
-from flask_track_usage.storage.printer import PrintStorage
+from flask.ext.track_usage import TrackUsage
+from flask.ext.track_usage.storage.printer import PrintStorage
 
 # Make an instance of the extension
 t = TrackUsage(app, PrintStorage())
@@ -70,6 +71,7 @@ Example Output From Example
     'url': 'http://127.0.0.1:5000/',
     'speed': 0.009223,
     'authorization': False,
+    'path': '/',
     'date': 1366936473,
 }
 ```

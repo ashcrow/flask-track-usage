@@ -130,6 +130,7 @@ class TrackUsage(object):
             'remote_addr': ctx.request.remote_addr,
             'authorization': bool(ctx.request.authorization),
             'ip_info': None,
+            'path': ctx.request.path,
             'speed': (
                 now - g.start_time).total_seconds(),
             'date': int(now.strftime('%s'))

@@ -66,6 +66,7 @@ class TestData(FlaskTrackUsageTestCase):
         assert result['speed'].__class__ is float
         assert result['view_args'] == {}
         assert result['url'] == 'http://localhost/'
+        assert result['path'] == '/'
         assert result['authorization'] is False
         assert result['user_agent'].string == ""  # because of testing
         assert type(result['date']) is int

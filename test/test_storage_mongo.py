@@ -124,4 +124,5 @@ class TestMongoStorage(FlaskTrackUsageTestCase):
         assert result['user_agent']['browser'] is None  # because of testing
         assert result['user_agent']['platform'] is None  # because of testing
         assert result['user_agent']['language'] is None  # because of testing
+        assert result['path'] == '/'
         assert type(result['date']) is datetime.datetime
