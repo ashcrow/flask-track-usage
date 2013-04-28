@@ -140,7 +140,7 @@ class TrackUsage(object):
             'authorization': bool(ctx.request.authorization),
             'ip_info': None,
             'path': ctx.request.path,
-            'speed': speed,
+            'speed': float(speed),
             'date': int(now.strftime('%s'))
         }
         if self._use_freegeoip:
