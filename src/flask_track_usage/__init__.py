@@ -123,7 +123,7 @@ class TrackUsage(object):
         now = datetime.datetime.utcnow()
         speed = None
         try:
-            speed = (now - g.start_time).total_seconds(),
+            speed = (now - g.start_time).total_seconds()
         except:
             # Older python versions don't have total_seconds()
             speed_result = (now - g.start_time)
