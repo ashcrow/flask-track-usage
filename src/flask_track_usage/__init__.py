@@ -38,7 +38,7 @@ import urllib
 
 from flask import _request_ctx_stack, g
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 __author__ = 'Steve Milner'
 __license__ = 'MBSD'
 
@@ -130,13 +130,18 @@ class TrackUsage(object):
             speed = float("%s.%s" % (
                 speed_result.seconds, speed_result.microseconds))
 
+        # Try to be smart and get the right IP address
+        remote_addr = ctx.request.remote_addr
+        if ctx.request.headers.get('X-Forwarded-For', None):
+            remote_addr = ctx.request.headers['X-Forwarded-For']
+
         data = {
             'url': ctx.request.url,
             'user_agent': ctx.request.user_agent,
             'blueprint': ctx.request.blueprint,
             'view_args': ctx.request.view_args,
             'status': response.status_code,
-            'remote_addr': ctx.request.remote_addr,
+            'remote_addr': remote_addr,
             'authorization': bool(ctx.request.authorization),
             'ip_info': None,
             'path': ctx.request.path,
@@ -146,7 +151,7 @@ class TrackUsage(object):
         if self._use_freegeoip:
             ip_info = json.loads(urllib.urlopen(
                 'http://freegeoip.net/json/%s' % urllib.quote_plus(
-                    ctx.request.remote_addr)).read())
+                    remote_addr)).read())
             data['ip_info'] = ip_info
 
         self._storage(data)
