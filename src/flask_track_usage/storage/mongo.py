@@ -44,6 +44,7 @@ class _MongoStorage(Storage):
             'browser': data['user_agent'].browser,
             'language': data['user_agent'].language,
             'platform': data['user_agent'].platform,
+            'version': data['user_agent'].version,
         }
         data['date'] = datetime.datetime.fromtimestamp(data['date'])
         data['user_agent'] = ua_dict

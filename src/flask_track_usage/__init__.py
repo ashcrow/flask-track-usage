@@ -38,7 +38,7 @@ import urllib
 
 from flask import _request_ctx_stack, g
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 __author__ = 'Steve Milner'
 __license__ = 'MBSD'
 
