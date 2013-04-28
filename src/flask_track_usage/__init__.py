@@ -121,6 +121,15 @@ class TrackUsage(object):
                 'You must set include or exclude type.')
 
         now = datetime.datetime.utcnow()
+        speed = None
+        try:
+            speed = (now - g.start_time).total_seconds(),
+        except:
+            # Older python versions don't have total_seconds()
+            speed_result = (now - g.start_time)
+            speed = float("%s.%s" % (
+                speed_result.seconds, speed_result.microseconds))
+
         data = {
             'url': ctx.request.url,
             'user_agent': ctx.request.user_agent,
@@ -131,8 +140,7 @@ class TrackUsage(object):
             'authorization': bool(ctx.request.authorization),
             'ip_info': None,
             'path': ctx.request.path,
-            'speed': (
-                now - g.start_time).total_seconds(),
+            'speed': speed,
             'date': int(now.strftime('%s'))
         }
         if self._use_freegeoip:
