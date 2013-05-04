@@ -59,7 +59,7 @@ app.run(debug=True)
 ```
 
 Example Output From Example
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------
 ```python
 {
     'blueprint': None,
