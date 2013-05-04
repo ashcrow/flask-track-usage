@@ -68,6 +68,8 @@ class TestMongoPiggybaclStorage(FlaskTrackUsageTestCase):
         """
         FlaskTrackUsageTestCase.setUp(self)
         self.storage = MongoPiggybackStorage(collection=COLLECTION)
+        # Clean out the storage
+        self.storage.collection.drop()
         self.track_usage = TrackUsage(self.app, self.storage)
 
     def test_mongo_piggyback_storage(self):
@@ -107,9 +109,11 @@ class TestMongoStorage(FlaskTrackUsageTestCase):
             database=DB,
             collection=COLL_NAME
         )
+        # Clean out the storage
+        self.storage.collection.drop()
         self.track_usage = TrackUsage(self.app, self.storage)
 
-    def test_mongo_storage(self):
+    def test_mongo_storage_data(self):
         """
         Test that data is stored in MongoDB and retrieved correctly.
         """
@@ -129,3 +133,23 @@ class TestMongoStorage(FlaskTrackUsageTestCase):
         assert result['user_agent']['version'] is None  # because of testing
         assert result['path'] == '/'
         assert type(result['date']) is datetime.datetime
+
+    def test_mongo_storage_get_usage(self):
+        """
+        Verify we can get usage information in expected ways.
+        """
+        # Make 3 requests to make sure we have enough records
+        self.client.get('/')
+        self.client.get('/')
+        self.client.get('/')
+
+        # Limit tests
+        assert len(self.storage.get_usage()) == 3
+        assert len(self.storage.get_usage(limit=2)) == 2
+        assert len(self.storage.get_usage(limit=1)) == 1
+
+        # timing tests
+        now = datetime.datetime.utcnow()
+        assert len(self.storage.get_usage(start_date=now)) == 0
+        assert len(self.storage.get_usage(end_date=now)) == 3
+        assert len(self.storage.get_usage(end_date=now, limit=2)) == 2

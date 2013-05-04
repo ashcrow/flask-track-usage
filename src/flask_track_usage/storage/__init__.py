@@ -75,3 +75,14 @@ class Storage(object):
            - `data`: Data to store.
         """
         return self.store(data)
+
+    def get_usage(self, start_date=None, end_date=None, limit=None):
+        """
+        Returns simple usage information by criteria in a standard form.
+
+        :Parameters:
+           - `start_date`: datetime.datetime representation of starting date
+           - `end_date`: datetime.datetime representation of ending date
+           - `limit`: The max amount of results to return
+        """
+        raise NotImplementedError('get_usage must be implemented.')

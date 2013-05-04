@@ -41,4 +41,10 @@ class PrintStorage(Storage):
     """
 
     def store(self, data):
+        """
+        Executed on "function call".
+
+        :Parameters:
+           - `data`: Data to store.
+        """
         print data

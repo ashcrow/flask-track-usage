@@ -38,8 +38,17 @@ from flask_track_usage.storage import Storage
 
 
 class _MongoStorage(Storage):
+    """
+    Parent storage class for Mongo storage.
+    """
 
     def store(self, data):
+        """
+        Executed on "function call".
+
+        :Parameters:
+           - `data`: Data to store.
+        """
         ua_dict = {
             'browser': data['user_agent'].browser,
             'language': data['user_agent'].language,
@@ -48,7 +57,33 @@ class _MongoStorage(Storage):
         }
         data['date'] = datetime.datetime.fromtimestamp(data['date'])
         data['user_agent'] = ua_dict
-        self.collection.insert(data)
+        print self.collection.insert(data)
+
+    def get_usage(self, start_date=None, end_date=None, limit=None):
+        """
+        Returns simple usage information by criteria in a standard form.
+
+        :Parameters:
+           - `start_date`: datetime.datetime representation of starting date
+           - `end_date`: datetime.datetime representation of ending date
+           - `limit`: The max amount of results to return
+        """
+        criteria = {}
+
+        # Set up date based criteria
+        if start_date or end_date:
+            criteria['date'] = {}
+            if start_date:
+                criteria['date']['$gte'] = start_date
+            if end_date:
+                criteria['date']['$lte'] = end_date
+
+        cursor = []
+        if limit:
+            cursor = self.collection.find(criteria).limit(limit)
+        else:
+            cursor = self.collection.find(criteria)
+        return [x for x in cursor]
 
 
 class MongoPiggybackStorage(_MongoStorage):
