@@ -78,7 +78,7 @@ class Storage(object):
 
     def get_usage(self, start_date=None, end_date=None, limit=None):
         """
-        Returns simple usage information by criteria in a standard form.
+        Returns simple usage information by criteria in a standard list form.
 
         :Parameters:
            - `start_date`: datetime.datetime representation of starting date

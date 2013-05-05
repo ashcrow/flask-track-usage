@@ -3,3 +3,4 @@ include LICENSE
 include README.md
 recursive-include test *
 recursive-include src *
+recursive-include docs *
