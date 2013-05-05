@@ -38,6 +38,7 @@ from flask_track_usage.storage import Storage
 class PrintStorage(Storage):
     """
     Simply prints out the data it gets. Not really storage proper.
+    Helpful for testing.
     """
 
     def store(self, data):

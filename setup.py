@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) 2013 Steve Milner
 # All rights reserved.
 #
@@ -47,6 +48,9 @@ setup(
     zip_safe=False,
     include_package_data=True,
     platforms='any',
+    setup_requires=[
+        'sphinx'
+    ],
     install_requires=[
         'Flask'
     ],
