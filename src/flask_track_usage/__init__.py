@@ -38,7 +38,7 @@ import urllib
 
 from flask import _request_ctx_stack, g
 
-__version__ = '0.0.5'
+__version__ = '0.0.7'
 __author__ = 'Steve Milner'
 __license__ = 'MBSD'
 
@@ -174,6 +174,56 @@ class TrackUsage(object):
            - `view`: The view to include.
         """
         self._include_views.add(view)
+
+    def _modify_blueprint(self, blueprint, include_type):
+        """
+        Modifies a blueprint to include or exclude views.
+
+        :Parameters:
+           - `blueprint`: Blueprint instance to include.
+           - `include_type`: include or exlude.
+        """
+        blueprint.before_request = self.before_request
+        blueprint.after_request = self.after_request
+
+        # Hack to grab views from blueprints since view_functions
+        # is always empty
+        class DeferredViewGrabber(object):
+            views = []
+
+            def add_url_rule(self, rule, endpoint, view_func, **options):
+                self.views.append(view_func)
+
+        dvg = DeferredViewGrabber()
+        [defered(dvg) for defered in blueprint.deferred_functions]
+
+        for view in dvg.views:
+            if include_type.lower() == 'include':
+                self._include_views.add(view)
+            elif include_type.lower() == 'exclude':
+                self._exclude_views.add(view)
+            else:
+                raise NotImplementedError(
+                    'You must set include or exclude type for the blueprint.')
+        return blueprint
+
+    def include_blueprint(self, blueprint):
+        """
+        Includes an entire blueprint.
+
+        :Parameters:
+           - `blueprint`: Blueprint instance to include.
+        """
+        self._modify_blueprint(blueprint, 'include')
+
+    def exclude_blueprint(self, blueprint):
+        """
+        Excludes an entire blueprint.
+
+        :Parameters:
+           - `blueprint`: Blueprint instance to exclude.
+        """
+        self._modify_blueprint(blueprint, 'exclude')
 
 
 if __name__ == '__main__':

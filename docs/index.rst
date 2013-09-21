@@ -67,6 +67,38 @@ Usage
     app.run(debug=True)
 
 
+Blueprint Support
+-----------------
+Blueprints can be included or excluded from Flask-TrackUsage in their entirety.
+
+::
+
+    # ...
+    app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
+
+    # Make an instance of the extension
+    t = TrackUsage(app, PrintStorage())
+
+    from my_blueprints import a_bluprint
+
+    # Now ALL of a_blueprint's views will be in the include list
+    t.include_bleprint(a_blueprint)
+
+
+::
+
+    # ...
+    app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'exclude'
+
+    # Make an instance of the extension
+    t = TrackUsage(app, PrintStorage())
+
+    from my_blueprints import a_bluprint
+
+    # Now ALL of different_blueprints will be in the exclude list
+    t.exclude_blueprint(a_blueprint)
+
+
 Configuration
 -------------
 
