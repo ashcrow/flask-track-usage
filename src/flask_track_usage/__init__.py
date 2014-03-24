@@ -34,11 +34,12 @@ Basic metrics tracking with Flask.
 
 import datetime
 import json
+import time
 import urllib
 
 from flask import _request_ctx_stack, g
 
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 __author__ = 'Steve Milner'
 __license__ = 'MBSD'
 
@@ -146,7 +147,7 @@ class TrackUsage(object):
             'ip_info': None,
             'path': ctx.request.path,
             'speed': float(speed),
-            'date': int(now.strftime('%s'))
+            'date': int(time.mktime(now.timetuple()))
         }
         if self._use_freegeoip:
             ip_info = json.loads(urllib.urlopen(
