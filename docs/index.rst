@@ -141,6 +141,12 @@ mongo.MongoStorage
     :members:
 
 
+sql.SQLStorage
+~~~~~~~~~~~~~~~~~~
+.. autoclass:: flask_track_usage.storage.sql.SQLStorage
+    :members:
+
+
 Retrieving Data
 ---------------
 All storage backends, other than printer.PrintStorage, provide get_usage.
