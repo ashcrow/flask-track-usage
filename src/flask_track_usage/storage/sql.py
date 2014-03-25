@@ -61,9 +61,8 @@ class SQLStorage(Storage):
         self._con = self._eng.connect()
         meta = sql.MetaData()
         if not self._con.dialect.has_table(self._con, table_name):
-
-
-            self.track_table = sql.Table(table_name, meta,
+            self.track_table = sql.Table(
+                table_name, meta,
                 sql.Column('id', sql.Integer, primary_key=True),
                 sql.Column('url', sql.String(128)),
                 sql.Column('ua_browser', sql.String(16)),
@@ -96,29 +95,30 @@ class SQLStorage(Storage):
         user_agent = data["user_agent"]
         utcdatetime = datetime.datetime.fromtimestamp(data['date'])
         stmt = self.track_table.insert().values(
-            url=data['url'],\
-            ua_browser=user_agent.browser,\
-            ua_language=user_agent.language,\
-            ua_platform=user_agent.platform,\
-            ua_version=user_agent.version,\
-            view_args=json.dumps(data["view_args"], ensure_ascii=False),\
-            status=data["status"],\
-            remote_addr=data["remote_addr"],\
-            authorization=data["authorization"],\
-            ip_info=data["ip_info"],\
-            path=data["path"],\
-            speed=data["speed"],\
+            url=data['url'],
+            ua_browser=user_agent.browser,
+            ua_language=user_agent.language,
+            ua_platform=user_agent.platform,
+            ua_version=user_agent.version,
+            view_args=json.dumps(data["view_args"], ensure_ascii=False),
+            status=data["status"],
+            remote_addr=data["remote_addr"],
+            authorization=data["authorization"],
+            ip_info=data["ip_info"],
+            path=data["path"],
+            speed=data["speed"],
             datetime=utcdatetime
         )
         con = self._eng.connect() if self._issqlite else self._con
         con.execute(stmt)
         if self._issqlite:
             con.close()
+
     def get_usage(self, start_date=None, end_date=None, limit=50):
         import sqlalchemy as sql
-        if end_date == None:
+        if end_date is None:
             end_date = datetime.datetime.utcnow()
-        if start_date == None:
+        if start_date is None:
             start_date = datetime.datetime(1970, 1, 1)
         stmt = sql.select([self.track_table]).where(
             self.track_table.c.datetime.between(start_date, end_date))
@@ -126,6 +126,3 @@ class SQLStorage(Storage):
         res = con.execute(stmt)
         result = res.fetchmany(size=limit)
         return result
-
-
-
