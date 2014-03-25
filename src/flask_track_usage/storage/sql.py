@@ -36,47 +36,48 @@ from . import Storage
 import json
 import datetime
 
+
 class SQLStorage(Storage):
     """
     Uses SQLAlchemy to connect to various databases such as SQLite, Oracle,
-    MySQL, Postgres, etc. Please SQLAlchemy wrapper for full support and 
+    MySQL, Postgres, etc. Please SQLAlchemy wrapper for full support and
     functionalities.
     """
-    
-    def set_up(self,conn_str,table_name="flask_usage"):
+
+    def set_up(self, conn_str, table_name="flask_usage"):
         """
         Sets the SQLAlchemy database
 
         :Parameters:
-           - `conn_str`: The SQLAlchemy connection string 
+           - `conn_str`: The SQLAlchemy connection string
            - `table_name`: Table name for storing the analytics. Defaults to \
                            `flask_usage`.
         """
-        
+
         import sqlalchemy as sql
         self._eng = sql.create_engine(conn_str)
         # sqlite needs conn and inserts to be issued by the same thread
         self._issqlite = self._eng.name == 'sqlite'
-        self._con = self._eng.connect() 
+        self._con = self._eng.connect()
         meta = sql.MetaData()
-        if not self._con.dialect.has_table(self._con,table_name):
-            
-            
-            self.track_table = sql.Table(table_name,meta,
-                sql.Column('id',sql.Integer,primary_key=True),\
-                sql.Column('url',sql.String(128)),\
-                sql.Column('ua_browser',sql.String(16)),\
-                sql.Column('ua_language',sql.String(16)),\
-                sql.Column('ua_platform',sql.String(16)),\
-                sql.Column('ua_version',sql.String(16)),\
-                sql.Column('view_args',sql.String(64)),\
-                sql.Column('status',sql.Integer),\
-                sql.Column('remote_addr',sql.String(24)),\
-                sql.Column('authorization',sql.Boolean),\
-                sql.Column('ip_info',sql.String(128)),\
-                sql.Column('path',sql.String(32)),\
-                sql.Column('speed',sql.Float),\
-                sql.Column('datetime',sql.DateTime)
+        if not self._con.dialect.has_table(self._con, table_name):
+
+
+            self.track_table = sql.Table(table_name, meta,
+                sql.Column('id', sql.Integer, primary_key=True),
+                sql.Column('url', sql.String(128)),
+                sql.Column('ua_browser', sql.String(16)),
+                sql.Column('ua_language', sql.String(16)),
+                sql.Column('ua_platform', sql.String(16)),
+                sql.Column('ua_version', sql.String(16)),
+                sql.Column('view_args', sql.String(64)),
+                sql.Column('status', sql.Integer),
+                sql.Column('remote_addr', sql.String(24)),
+                sql.Column('authorization', sql.Boolean),
+                sql.Column('ip_info', sql.String(128)),
+                sql.Column('path', sql.String(32)),
+                sql.Column('speed', sql.Float),
+                sql.Column('datetime', sql.DateTime)
             )
             meta.create_all(self._eng)
         else:
@@ -84,30 +85,30 @@ class SQLStorage(Storage):
             self.track_table = meta.tables[table_name]
         if self._issqlite:
             self._con.close()
-            
-    def store(self,data):
+
+    def store(self, data):
         """
         Executed on "function call".
 
         :Parameters:
            - `data`: Data to store.
         """
-        ua = data["user_agent"]
+        user_agent = data["user_agent"]
         utcdatetime = datetime.datetime.fromtimestamp(data['date'])
         stmt = self.track_table.insert().values(
-            url = data['url']        ,\
-            ua_browser = ua.browser,\
-            ua_language=ua.language,\
-            ua_platform=ua.platform,\
-            ua_version=ua.version,\
-            view_args = json.dumps(data["view_args"],ensure_ascii=False),\
-            status = data["status"],\
-            remote_addr = data["remote_addr"],\
-            authorization = data["authorization"],\
-            ip_info = data["ip_info"],\
-            path = data["path"],\
-            speed = data["speed"],\
-            datetime = utcdatetime        
+            url=data['url'],\
+            ua_browser=user_agent.browser,\
+            ua_language=user_agent.language,\
+            ua_platform=user_agent.platform,\
+            ua_version=user_agent.version,\
+            view_args=json.dumps(data["view_args"], ensure_ascii=False),\
+            status=data["status"],\
+            remote_addr=data["remote_addr"],\
+            authorization=data["authorization"],\
+            ip_info=data["ip_info"],\
+            path=data["path"],\
+            speed=data["speed"],\
+            datetime=utcdatetime
         )
         con = self._eng.connect() if self._issqlite else self._con
         con.execute(stmt)
@@ -115,17 +116,16 @@ class SQLStorage(Storage):
             con.close()
     def get_usage(self, start_date=None, end_date=None, limit=50):
         import sqlalchemy as sql
-        if end_date==None:
+        if end_date == None:
             end_date = datetime.datetime.utcnow()
         if start_date == None:
-            start_date = datetime.datetime(1970,1,1)
-        s = sql.select([self.track_table]).where(
-            self.track_table.c.datetime.between(start_date,end_date))
+            start_date = datetime.datetime(1970, 1, 1)
+        stmt = sql.select([self.track_table]).where(
+            self.track_table.c.datetime.between(start_date, end_date))
         con = self._eng.connect() if self._issqlite else self._con
-        res = con.execute(s)
+        res = con.execute(stmt)
         result = res.fetchmany(size=limit)
         return result
-   
-    
-            
-    
+
+
+
