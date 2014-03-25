@@ -4,7 +4,7 @@ python:
 services:
   - mongodb
 before_script:
-  - pip install coverage pep8 pymongo --use-mirrors
+  - pip install coverage pep8 pymongo sqlalchemy --use-mirrors
 install:
   - pip install -e . --use-mirrors
 script:
