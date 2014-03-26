@@ -69,6 +69,7 @@ class SQLStorage(Storage):
                 sql.Column('ua_language', sql.String(16)),
                 sql.Column('ua_platform', sql.String(16)),
                 sql.Column('ua_version', sql.String(16)),
+                sql.Column('blueprint', sql.String(16)),
                 sql.Column('view_args', sql.String(64)),
                 sql.Column('status', sql.Integer),
                 sql.Column('remote_addr', sql.String(24)),
@@ -100,6 +101,7 @@ class SQLStorage(Storage):
             ua_language=user_agent.language,
             ua_platform=user_agent.platform,
             ua_version=user_agent.version,
+            blueprint=data["blueprint"],
             view_args=json.dumps(data["view_args"], ensure_ascii=False),
             status=data["status"],
             remote_addr=data["remote_addr"],
@@ -125,4 +127,6 @@ class SQLStorage(Storage):
         con = self._eng.connect() if self._issqlite else self._con
         res = con.execute(stmt)
         result = res.fetchmany(size=limit)
+        if self._issqlite:
+            con.close()
         return result
