@@ -116,17 +116,20 @@ class SQLStorage(Storage):
         if self._issqlite:
             con.close()
 
-    def get_usage(self, start_date=None, end_date=None, limit=50):
+    def get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         import sqlalchemy as sql
+        page = max(1, page)   # min bound
         if end_date is None:
             end_date = datetime.datetime.utcnow()
         if start_date is None:
             start_date = datetime.datetime(1970, 1, 1)
-        stmt = sql.select([self.track_table]).where(
-            self.track_table.c.datetime.between(start_date, end_date))
+        stmt = sql.select([self.track_table])\
+            .where(self.track_table.c.datetime.between(start_date, end_date))\
+            .limit(limit)\
+            .offset(limit*(page-1))
         con = self._eng.connect() if self._issqlite else self._con
         res = con.execute(stmt)
-        result = res.fetchmany(size=limit)
+        result = res.fetchall()
         if self._issqlite:
             con.close()
         return result

@@ -76,7 +76,7 @@ class Storage(object):
         """
         return self.store(data)
 
-    def get_usage(self, start_date=None, end_date=None, limit=None):
+    def get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """
         Returns simple usage information by criteria in a standard list form.
 
@@ -84,5 +84,7 @@ class Storage(object):
            - `start_date`: datetime.datetime representation of starting date
            - `end_date`: datetime.datetime representation of ending date
            - `limit`: The max amount of results to return
+           - `page` : The page number of the result limited by `limit` number
+              in a page
         """
         raise NotImplementedError('get_usage must be implemented.')
