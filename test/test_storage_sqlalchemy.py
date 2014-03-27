@@ -150,4 +150,13 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert len(self.storage.get_usage(end_date=now)) == 3
         assert len(self.storage.get_usage(end_date=now, limit=2)) == 2
         
+        # test pagination        
+        for i in range(100):
+            self.client.get('/')
+        limit = 10
+        for page in range(1,11):
+            result = self.storage.get_usage(limit=limit,page=page)
+            for i in range(limit):
+                assert (page-1)*limit+i+1 == result[i][0]
+        
         
