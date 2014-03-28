@@ -128,7 +128,7 @@ class SQLStorage(Storage):
                     'version': r[5],
                 },
                 'blueprint': r[6],
-                'view_args': r[7],  # if r[6] != '{}' else None ,
+                'view_args': r[7] if r[7] != '{}' else None,
                 'status': int(r[8]),
                 'remote_addr': r[9],
                 'authorization': r[10],
