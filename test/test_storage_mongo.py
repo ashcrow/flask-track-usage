@@ -148,6 +148,10 @@ class TestMongoStorage(FlaskTrackUsageTestCase):
         assert len(self.storage.get_usage(limit=2)) == 2
         assert len(self.storage.get_usage(limit=1)) == 1
 
+        # Page tests
+        assert len(self.storage.get_usage(limit=2, page=1)) == 2
+        assert len(self.storage.get_usage(limit=2, page=2)) == 1
+
         # timing tests
         now = datetime.datetime.utcnow()
         assert len(self.storage.get_usage(start_date=now)) == 0
