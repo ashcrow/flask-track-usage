@@ -117,6 +117,32 @@ class SQLStorage(Storage):
             con.close()
 
     def get_usage(self, start_date=None, end_date=None, limit=500, page=1):
+        raw_data = self._get_usage(start_date, end_date, limit, page)
+        usage_data = [
+            {
+                'url': r[1],
+                'user_agent': {
+                    'browser': r[2],
+                    'language': r[3],
+                    'platform': r[4],
+                    'version': r[5],
+                },
+                'blueprint': r[6],
+                'view_args': r[7] if r[7] != '{}' else None,
+                'status': int(r[8]),
+                'remote_addr': r[9],
+                'authorization': r[10],
+                'ip_info': r[11],
+                'path': r[12],
+                'speed': r[13],
+                'date': r[14]
+            } for r in raw_data]
+        return usage_data
+
+    def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
+        '''
+        This is the raw getter from database
+        '''
         import sqlalchemy as sql
         page = max(1, page)   # min bound
         if end_date is None:
@@ -126,7 +152,8 @@ class SQLStorage(Storage):
         stmt = sql.select([self.track_table])\
             .where(self.track_table.c.datetime.between(start_date, end_date))\
             .limit(limit)\
-            .offset(limit*(page-1))
+            .offset(limit*(page-1))\
+            .order_by(sql.desc(self.track_table.c.datetime))
         con = self._eng.connect() if self._issqlite else self._con
         res = con.execute(stmt)
         result = res.fetchall()

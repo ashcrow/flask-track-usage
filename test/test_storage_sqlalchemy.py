@@ -101,7 +101,7 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         """
         # First check no blueprint case get_usage is correct
         self.client.get('/')
-        result = self.storage.get_usage()[0]
+        result = self.storage._get_usage()[0]
         assert result[0] == 1 # first row
         assert result[1] == u'http://localhost/'
         assert result[2] is None
@@ -119,7 +119,7 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         
         # Next check with blueprint the get_usage is correct
         self.client.get('/blueprint')
-        rows = self.storage.get_usage()
+        rows = self.storage._get_usage()
         result = rows[1] if rows[0][6] is None else rows[0]
         assert result[0] == 2 # first row
         assert result[1] == u'http://localhost/blueprint'
@@ -140,23 +140,41 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         self.client.get('/')
 
         # Limit tests
-        assert len(self.storage.get_usage()) == 3
-        assert len(self.storage.get_usage(limit=2)) == 2
-        assert len(self.storage.get_usage(limit=1)) == 1
+        assert len(self.storage._get_usage()) == 3
+        assert len(self.storage._get_usage(limit=2)) == 2
+        assert len(self.storage._get_usage(limit=1)) == 1
         
         # timing tests
         now = datetime.datetime.utcnow()
-        assert len(self.storage.get_usage(start_date=now)) == 0
-        assert len(self.storage.get_usage(end_date=now)) == 3
-        assert len(self.storage.get_usage(end_date=now, limit=2)) == 2
+        assert len(self.storage._get_usage(start_date=now)) == 0
+        assert len(self.storage._get_usage(end_date=now)) == 3
+        assert len(self.storage._get_usage(end_date=now, limit=2)) == 2
         
         # test pagination        
         for i in range(100):
             self.client.get('/')
-        limit = 10
-        for page in range(1,11):
-            result = self.storage.get_usage(limit=limit,page=page)
-            for i in range(limit):
-                assert (page-1)*limit+i+1 == result[i][0]
         
+        limit = 10
+        num_pages = 10
+        for page in range(1,num_pages + 1):
+            result = self.storage._get_usage(limit=limit,page=page)
+            assert len(result) == limit
+        
+        # actual api test
+        result = self.storage._get_usage(limit=100)  # raw data
+        result2 = self.storage.get_usage(limit=100)  # dict data
+        for i in range(100):
+            assert result[i][1] == result2[i]['url']
+            assert result[i][2] == result2[i]['user_agent']['browser']
+            assert result[i][3] == result2[i]['user_agent']['language']
+            assert result[i][4] == result2[i]['user_agent']['platform']
+            assert result[i][5] == result2[i]['user_agent']['version']
+            assert result[i][6] == result2[i]['blueprint']
+            assert result[i][8] == result2[i]['status']
+            assert result[i][9] == result2[i]['remote_addr']
+            assert result[i][10] == result2[i]['authorization']
+            assert result[i][11] == result2[i]['ip_info']
+            assert result[i][12] == result2[i]['path']
+            assert result[i][13] == result2[i]['speed'] 
+            assert result[i][14] == result2[i]['date'] 
         
