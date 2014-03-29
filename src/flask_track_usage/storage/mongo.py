@@ -59,7 +59,7 @@ class _MongoStorage(Storage):
         data['user_agent'] = ua_dict
         print self.collection.insert(data)
 
-    def get_usage(self, start_date=None, end_date=None, limit=None):
+    def get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """
         Returns simple usage information by criteria in a standard form.
 
@@ -67,6 +67,7 @@ class _MongoStorage(Storage):
            - `start_date`: datetime.datetime representation of starting date
            - `end_date`: datetime.datetime representation of ending date
            - `limit`: The max amount of results to return
+           - `page`: Result page number limited by `limit` number in a page
         """
         criteria = {}
 
@@ -80,7 +81,8 @@ class _MongoStorage(Storage):
 
         cursor = []
         if limit:
-            cursor = self.collection.find(criteria).limit(limit)
+            cursor = self.collection.find(criteria).skip(
+                limit * (page - 1)).limit(limit)
         else:
             cursor = self.collection.find(criteria)
         return [x for x in cursor]
