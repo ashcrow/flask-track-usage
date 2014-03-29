@@ -6,7 +6,7 @@ services:
 before_script:
   - mysql -e 'create database track_usage_test;'
   - psql -c 'create database track_usage_test;' -U postgres
-  - pip install coverage pep8 pymongo sqlalchemy --use-mirrors
+  - pip install coverage pep8 pymongo sqlalchemy psycopg2 mysql-python --use-mirrors
 install:
   - pip install -e . --use-mirrors
 script:

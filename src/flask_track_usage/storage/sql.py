@@ -58,7 +58,7 @@ class SQLStorage(Storage):
         self._eng = sql.create_engine(conn_str)
         # sqlite needs conn and inserts to be issued by the same thread
         self._issqlite = self._eng.name == 'sqlite'
-        self._con = self._eng.connect()
+        self._con = self._get_connection()
         meta = sql.MetaData()
         if not self._con.dialect.has_table(self._con, table_name):
             self.track_table = sql.Table(
@@ -83,8 +83,7 @@ class SQLStorage(Storage):
         else:
             meta.reflect(bind=self._eng)
             self.track_table = meta.tables[table_name]
-        if self._issqlite:
-            self._con.close()
+        self._close_connection(self._con)
 
     def store(self, data):
         """
@@ -111,8 +110,16 @@ class SQLStorage(Storage):
             speed=data["speed"],
             datetime=utcdatetime
         )
-        con = self._eng.connect() if self._issqlite else self._con
+        con = self._get_connection()
         con.execute(stmt)
+        self._close_connection(con)
+
+    def _get_connection(self):
+        return self._eng.connect() if \
+            (self._issqlite or not hasattr(self, '_con')) \
+            else self._con
+
+    def _close_connection(self, con):
         if self._issqlite:
             con.close()
 
@@ -154,9 +161,8 @@ class SQLStorage(Storage):
             .limit(limit)\
             .offset(limit*(page-1))\
             .order_by(sql.desc(self.track_table.c.datetime))
-        con = self._eng.connect() if self._issqlite else self._con
+        con = self._get_connection()
         res = con.execute(stmt)
         result = res.fetchall()
-        if self._issqlite:
-            con.close()
+        self._close_connection(con)
         return result
