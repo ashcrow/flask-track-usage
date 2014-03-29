@@ -84,7 +84,6 @@ class Storage(object):
            - `start_date`: datetime.datetime representation of starting date
            - `end_date`: datetime.datetime representation of ending date
            - `limit`: The max amount of results to return
-           - `page` : The page number of the result limited by `limit` number
-              in a page
+           - `page`: Result page number limited by `limit` number in a page
         """
         raise NotImplementedError('get_usage must be implemented.')

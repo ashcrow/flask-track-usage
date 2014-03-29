@@ -3,12 +3,17 @@ Flask-Track-Usage
 
 .. module:: flask_track_usage
 
+.. warning::
+   This release is not 100% backwards compatible with the 0.0.x series of releases.
+
 Basic metrics tracking for your `Flask`_ application. This focuses more on ip addresses/locations rather than tracking specific users pathing through an application. No extra cookies or javascript is used for usage tracking.
 
 * Simple. It's a Flask extension.
 * Supports either include or exempt for views.
 * Provides lite abstraction for data retrieval.
 * Optional `freegeoip.net <http://freegeoip.net/>`_ integration.
+* Multiple storage options.
+
 
 .. _Flask: http://flask.pocoo.org/
 
@@ -153,3 +158,31 @@ All storage backends, other than printer.PrintStorage, provide get_usage.
 
 .. autoclass:: flask_track_usage.storage.Storage
     :members: get_usage
+
+Results that are returned from all instances of get_usage should look like this:
+
+.. code-block:: python
+
+    [
+        {
+                'url': str,
+                'user_agent': {
+                    'browser': str,
+                    'language': str,
+                    'platform': str,
+                    'version': str,
+                },
+                'blueprint': str,
+                'view_args': dict or None
+                'status': int,
+                'remote_addr': str,
+                'authorization': bool,
+                'ip_info': str or None,
+                'path': str,
+                'speed': float,
+                'date': int,
+        },
+        {
+            ....
+        }
+    ]
