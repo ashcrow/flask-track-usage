@@ -4,6 +4,7 @@ python:
 services:
   - mongodb
 before_script:
+  - mysql -e 'create database track_usage_test;'
   - pip install coverage pep8 pymongo sqlalchemy --use-mirrors
 install:
   - pip install -e . --use-mirrors
