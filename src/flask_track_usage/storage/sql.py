@@ -159,7 +159,7 @@ class SQLStorage(Storage):
         stmt = sql.select([self.track_table])\
             .where(self.track_table.c.datetime.between(start_date, end_date))\
             .limit(limit)\
-            .offset(limit*(page-1))\
+            .offset(limit * (page - 1))\
             .order_by(sql.desc(self.track_table.c.datetime))
         con = self._get_connection()
         res = con.execute(stmt)
