@@ -95,6 +95,7 @@ class TestMongoPiggybaclStorage(FlaskTrackUsageTestCase):
 
 
 @unittest.skipUnless(HAS_PYMONGO, "Requires pymongo")
+@unittest.skipUnless(COLLECTION, "Requires a running test MongoDB")
 class TestMongoStorage(FlaskTrackUsageTestCase):
     """
     Tests MongoDB storage while using it's own connection.
