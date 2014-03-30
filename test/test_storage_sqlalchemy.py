@@ -94,7 +94,6 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         con = self.storage._eng.connect()
         s = sql.select([self.storage.track_table])
         result = con.execute(s).fetchone()
-        print result
         #assert result[0] == 1 # first row
         assert result[1] == u'http://localhost/blueprint'
         assert result[2] is None
@@ -110,11 +109,12 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[13].__class__ is float
         assert type(result[14]) is datetime.datetime
 
-    def test_storage__get_usage(self):
+    def test_storage__get_raw(self):
         # First check no blueprint case get_usage is correct
         self.client.get('/')
-        result = self.storage._get_usage()[0]
+        result = self.storage._get_raw()[0]
         #assert result[0] == 1 # first row
+        print result
         assert result[1] == u'http://localhost/'
         assert result[2] is None
         assert result[3] is None
@@ -131,7 +131,7 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
 
         # Next check with blueprint the get_usage is correct
         self.client.get('/blueprint')
-        rows = self.storage._get_usage()
+        rows = self.storage._get_raw()
         result = rows[1] if rows[0][6] is None else rows[0]
         #assert result[0] == 2 # first row
         assert result[1] == u'http://localhost/blueprint'
@@ -152,18 +152,57 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         self.client.get('/')
 
         # Limit tests
-        assert len(self.storage._get_usage()) == 3
-        assert len(self.storage._get_usage(limit=2)) == 2
-        assert len(self.storage._get_usage(limit=1)) == 1
+        assert len(self.storage._get_raw()) == 3
+        assert len(self.storage._get_raw(limit=2)) == 2
+        assert len(self.storage._get_raw(limit=1)) == 1
 
         # timing tests
         # give a 5 second lag since datetime stored is second precision
 
         now = datetime.datetime.utcnow() + datetime.timedelta(0, 5)
-        assert len(self.storage._get_usage(start_date=now)) == 0
-        assert len(self.storage._get_usage(end_date=now)) == 3
-        assert len(self.storage._get_usage(end_date=now, limit=2)) == 2
+        assert len(self.storage._get_raw(start_date=now)) == 0
+        assert len(self.storage._get_raw(end_date=now)) == 3
+        assert len(self.storage._get_raw(end_date=now, limit=2)) == 2
 
+    def test_storage__get_usage(self):
+        self.client.get('/')
+        result = self.storage._get_raw()[0]
+        result2 = self.storage._get_usage()[0]
+        #assert result[0] == 1 # first row
+        assert result[1] == result2['url']
+        assert result[2] == result2['user_agent']['browser']
+        assert result[3] == result2['user_agent']['language']
+        assert result[4] == result2['user_agent']['platform']
+        assert result[5] == result2['user_agent']['version']
+        assert result[6] == result2['blueprint']
+        assert result[8] == result2['status']
+        assert result[9] == result2['remote_addr']
+        assert result[10] == result2['authorization']
+        assert result[11] == result2['ip_info']
+        assert result[12] == result2['path']
+        assert result[13] == result2['speed']
+        assert result[14] == result2['date']
+
+    def test_storage_get_usage(self):
+        self.client.get('/')
+        result = self.storage._get_raw()[0]
+        result2 = self.storage.get_usage()[0]
+        #assert result[0] == 1 # first row
+        assert result[1] == result2['url']
+        assert result[2] == result2['user_agent']['browser']
+        assert result[3] == result2['user_agent']['language']
+        assert result[4] == result2['user_agent']['platform']
+        assert result[5] == result2['user_agent']['version']
+        assert result[6] == result2['blueprint']
+        assert result[8] == result2['status']
+        assert result[9] == result2['remote_addr']
+        assert result[10] == result2['authorization']
+        assert result[11] == result2['ip_info']
+        assert result[12] == result2['path']
+        assert result[13] == result2['speed']
+        assert result[14] == result2['date']
+
+    def test_storage_get_usage_pagination(self):
         # test pagination
         for i in range(100):
             self.client.get('/')
@@ -175,7 +214,7 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
             assert len(result) == limit
 
         # actual api test
-        result = self.storage._get_usage(limit=100)  # raw data
+        result = self.storage._get_raw(limit=100)  # raw data
         result2 = self.storage.get_usage(limit=100)  # dict data
         for i in range(100):
             assert result[i][1] == result2[i]['url']

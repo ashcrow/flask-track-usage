@@ -123,8 +123,11 @@ class SQLStorage(Storage):
         if self._issqlite:
             con.close()
 
-    def get_usage(self, start_date=None, end_date=None, limit=500, page=1):
-        raw_data = self._get_usage(start_date, end_date, limit, page)
+    def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
+        '''
+        This is what translates the raw data into the proper structure.
+        '''
+        raw_data = self._get_raw(start_date, end_date, limit, page)
         usage_data = [
             {
                 'url': r[1],
@@ -146,7 +149,7 @@ class SQLStorage(Storage):
             } for r in raw_data]
         return usage_data
 
-    def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
+    def _get_raw(self, start_date=None, end_date=None, limit=500, page=1):
         '''
         This is the raw getter from database
         '''
@@ -156,6 +159,7 @@ class SQLStorage(Storage):
             end_date = datetime.datetime.utcnow()
         if start_date is None:
             start_date = datetime.datetime(1970, 1, 1)
+
         stmt = sql.select([self.track_table])\
             .where(self.track_table.c.datetime.between(start_date, end_date))\
             .limit(limit)\
