@@ -92,6 +92,14 @@ class Storage(object):
         """
         Returns simple usage information by criteria in a standard list form.
 
+        .. note::
+           *limit* is the amount if items returned per *page*.
+           If *page* is not incremented you will always receive the
+           first *limit* amount of results.
+
+        .. versionadded:: 1.0.0
+           The *page* parameter.
+
         :Parameters:
            - `start_date`: datetime.datetime representation of starting date
            - `end_date`: datetime.datetime representation of ending date

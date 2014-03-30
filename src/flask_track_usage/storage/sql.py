@@ -42,6 +42,9 @@ class SQLStorage(Storage):
     Uses SQLAlchemy to connect to various databases such as SQLite, Oracle,
     MySQL, Postgres, etc. Please SQLAlchemy wrapper for full support and
     functionalities.
+
+    .. versionadded:: 1.0.0
+       SQLStorage was added.
     """
 
     def set_up(self, conn_str, table_name="flask_usage"):
