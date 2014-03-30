@@ -59,9 +59,9 @@ class _MongoStorage(Storage):
         data['user_agent'] = ua_dict
         print self.collection.insert(data)
 
-    def get_usage(self, start_date=None, end_date=None, limit=500, page=1):
+    def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """
-        Returns simple usage information by criteria in a standard form.
+        Implements the simple usage information by criteria in a standard form.
 
         :Parameters:
            - `start_date`: datetime.datetime representation of starting date

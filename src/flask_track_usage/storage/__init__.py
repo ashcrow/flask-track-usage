@@ -76,6 +76,18 @@ class Storage(object):
         """
         return self.store(data)
 
+    def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
+        """
+        Implements simple usage information by criteria in a standard list form
+
+        :Parameters:
+           - `start_date`: datetime.datetime representation of starting date
+           - `end_date`: datetime.datetime representation of ending date
+           - `limit`: The max amount of results to return
+           - `page`: Result page number limited by `limit` number in a page
+        """
+        raise NotImplementedError('get_usage must be implemented.')
+
     def get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """
         Returns simple usage information by criteria in a standard list form.
@@ -86,4 +98,14 @@ class Storage(object):
            - `limit`: The max amount of results to return
            - `page`: Result page number limited by `limit` number in a page
         """
-        raise NotImplementedError('get_usage must be implemented.')
+        raw_data = self._get_usage(start_date, end_date, limit, page)
+        if type(raw_data) != list:
+            raise Exception(
+                'Container returned from _get_usage '
+                'does not conform to the spec.')
+        for item in raw_data:
+            if type(item) != dict:
+                raise Exception(
+                    'An item returned from _get_usage '
+                    'does not conform to the spec.')
+        return raw_data
