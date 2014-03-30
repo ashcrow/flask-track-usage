@@ -180,7 +180,7 @@ Results that are returned from all instances of get_usage should look like this:
                 'ip_info': str or None,
                 'path': str,
                 'speed': float,
-                'date': int,
+                'date': datetime,
         },
         {
             ....
