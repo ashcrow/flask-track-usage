@@ -119,7 +119,10 @@ TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS
 
 **Default**: exclude
 
-If views should be included or excluded by default
+If views should be included or excluded by default.
+
+* When set to *exclude* each routed view must be explicitly included via decorator or blueprint include method. If a routed view is not included it will not be tracked.
+* When set to *include* each routed view must be explicitly excluded via decorator or blueprint exclude method. If a routed view is not excluded it will be tracked.
 
 Storage
 -------
