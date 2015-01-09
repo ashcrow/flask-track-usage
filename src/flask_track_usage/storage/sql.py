@@ -57,8 +57,7 @@ class SQLStorage(Storage):
                            `flask_usage`.
            - `db`: Instead of providing the conn_str, one can optionally 
                    provide the Flask-SQLAlchemy's SQLALchemy object created as 
-                   SQLAlchemy(app)
-           
+                   SQLAlchemy(app).
         """
 
         import sqlalchemy as sql
@@ -95,7 +94,6 @@ class SQLStorage(Storage):
                 meta.reflect(bind=self._eng)
                 self.track_table = meta.tables[table_name]
 
-
     def store(self, data):
         """
         Executed on "function call".
@@ -124,13 +122,11 @@ class SQLStorage(Storage):
             )
             con.execute(stmt)
 
-
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         '''
         This is what translates the raw data into the proper structure.
         '''
         raw_data = self._get_raw(start_date, end_date, limit, page)
-        #if len(raw_data) == 15:
         usage_data = [
             {
                 'url': r[1],
