@@ -55,8 +55,8 @@ class SQLStorage(Storage):
            - `conn_str`: The SQLAlchemy connection string
            - `table_name`: Table name for storing the analytics. Defaults to \
                            `flask_usage`.
-           - `db`: Instead of providing the conn_str, one can optionally 
-                   provide the Flask-SQLAlchemy's SQLALchemy object created as 
+           - `db`: Instead of providing the conn_str, one can optionally
+                   provide the Flask-SQLAlchemy's SQLALchemy object created as
                    SQLAlchemy(app).
         """
 
@@ -159,8 +159,9 @@ class SQLStorage(Storage):
         if start_date is None:
             start_date = datetime.datetime(1970, 1, 1)
         with self._eng.begin() as con:
+            _table = self.track_table
             stmt = sql.select([self.track_table])\
-                .where(self.track_table.c.datetime.between(start_date, end_date))\
+                .where(_table.c.datetime.between(start_date, end_date))\
                 .limit(limit)\
                 .offset(limit * (page - 1))\
                 .order_by(sql.desc(self.track_table.c.datetime))
