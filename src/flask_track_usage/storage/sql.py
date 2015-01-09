@@ -47,7 +47,7 @@ class SQLStorage(Storage):
        SQLStorage was added.
     """
 
-    def set_up(self, conn_str, table_name="flask_usage"):
+    def set_up(self, conn_str=None, table_name="flask_usage", db=None):
         """
         Sets the SQLAlchemy database
 
@@ -55,38 +55,46 @@ class SQLStorage(Storage):
            - `conn_str`: The SQLAlchemy connection string
            - `table_name`: Table name for storing the analytics. Defaults to \
                            `flask_usage`.
+           - `db`: Instead of providing the conn_str, one can optionally 
+                   provide the Flask-SQLAlchemy's SQLALchemy object created as 
+                   SQLAlchemy(app)
+           
         """
 
         import sqlalchemy as sql
-        self._eng = sql.create_engine(conn_str)
-        # sqlite needs conn and inserts to be issued by the same thread
-        self._issqlite = self._eng.name == 'sqlite'
-        self._con = self._get_connection()
-        meta = sql.MetaData()
-        if not self._con.dialect.has_table(self._con, table_name):
-            self.track_table = sql.Table(
-                table_name, meta,
-                sql.Column('id', sql.Integer, primary_key=True),
-                sql.Column('url', sql.String(128)),
-                sql.Column('ua_browser', sql.String(16)),
-                sql.Column('ua_language', sql.String(16)),
-                sql.Column('ua_platform', sql.String(16)),
-                sql.Column('ua_version', sql.String(16)),
-                sql.Column('blueprint', sql.String(16)),
-                sql.Column('view_args', sql.String(64)),
-                sql.Column('status', sql.Integer),
-                sql.Column('remote_addr', sql.String(24)),
-                sql.Column('authorization', sql.Boolean),
-                sql.Column('ip_info', sql.String(128)),
-                sql.Column('path', sql.String(32)),
-                sql.Column('speed', sql.Float),
-                sql.Column('datetime', sql.DateTime)
-            )
-            meta.create_all(self._eng)
+        if db is not None:
+            self._eng = db.engine
+        elif conn_str is not None:
+            self._eng = sql.create_engine(conn_str)
         else:
-            meta.reflect(bind=self._eng)
-            self.track_table = meta.tables[table_name]
-        self._close_connection(self._con)
+            raise ValueError("Both conn_str and db cannot be None")
+        self._con = None
+        with self._eng.begin() as self._con:
+            meta = sql.MetaData()
+            if not self._con.dialect.has_table(self._con, table_name):
+                self.track_table = sql.Table(
+                    table_name, meta,
+                    sql.Column('id', sql.Integer, primary_key=True),
+                    sql.Column('url', sql.String(128)),
+                    sql.Column('ua_browser', sql.String(16)),
+                    sql.Column('ua_language', sql.String(16)),
+                    sql.Column('ua_platform', sql.String(16)),
+                    sql.Column('ua_version', sql.String(16)),
+                    sql.Column('blueprint', sql.String(16)),
+                    sql.Column('view_args', sql.String(64)),
+                    sql.Column('status', sql.Integer),
+                    sql.Column('remote_addr', sql.String(24)),
+                    sql.Column('authorization', sql.Boolean),
+                    sql.Column('ip_info', sql.String(128)),
+                    sql.Column('path', sql.String(32)),
+                    sql.Column('speed', sql.Float),
+                    sql.Column('datetime', sql.DateTime)
+                )
+                meta.create_all(self._eng)
+            else:
+                meta.reflect(bind=self._eng)
+                self.track_table = meta.tables[table_name]
+
 
     def store(self, data):
         """
@@ -97,40 +105,32 @@ class SQLStorage(Storage):
         """
         user_agent = data["user_agent"]
         utcdatetime = datetime.datetime.fromtimestamp(data['date'])
-        stmt = self.track_table.insert().values(
-            url=data['url'],
-            ua_browser=user_agent.browser,
-            ua_language=user_agent.language,
-            ua_platform=user_agent.platform,
-            ua_version=user_agent.version,
-            blueprint=data["blueprint"],
-            view_args=json.dumps(data["view_args"], ensure_ascii=False),
-            status=data["status"],
-            remote_addr=data["remote_addr"],
-            authorization=data["authorization"],
-            ip_info=data["ip_info"],
-            path=data["path"],
-            speed=data["speed"],
-            datetime=utcdatetime
-        )
-        con = self._get_connection()
-        con.execute(stmt)
-        self._close_connection(con)
+        with self._eng.begin() as con:
+            stmt = self.track_table.insert().values(
+                url=data['url'],
+                ua_browser=user_agent.browser,
+                ua_language=user_agent.language,
+                ua_platform=user_agent.platform,
+                ua_version=user_agent.version,
+                blueprint=data["blueprint"],
+                view_args=json.dumps(data["view_args"], ensure_ascii=False),
+                status=data["status"],
+                remote_addr=data["remote_addr"],
+                authorization=data["authorization"],
+                ip_info=data["ip_info"],
+                path=data["path"],
+                speed=data["speed"],
+                datetime=utcdatetime
+            )
+            con.execute(stmt)
 
-    def _get_connection(self):
-        return self._eng.connect() if \
-            (self._issqlite or not hasattr(self, '_con')) \
-            else self._con
-
-    def _close_connection(self, con):
-        if self._issqlite:
-            con.close()
 
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         '''
         This is what translates the raw data into the proper structure.
         '''
         raw_data = self._get_raw(start_date, end_date, limit, page)
+        #if len(raw_data) == 15:
         usage_data = [
             {
                 'url': r[1],
@@ -162,14 +162,12 @@ class SQLStorage(Storage):
             end_date = datetime.datetime.utcnow()
         if start_date is None:
             start_date = datetime.datetime(1970, 1, 1)
-
-        stmt = sql.select([self.track_table])\
-            .where(self.track_table.c.datetime.between(start_date, end_date))\
-            .limit(limit)\
-            .offset(limit * (page - 1))\
-            .order_by(sql.desc(self.track_table.c.datetime))
-        con = self._get_connection()
-        res = con.execute(stmt)
-        result = res.fetchall()
-        self._close_connection(con)
+        with self._eng.begin() as con:
+            stmt = sql.select([self.track_table])\
+                .where(self.track_table.c.datetime.between(start_date, end_date))\
+                .limit(limit)\
+                .offset(limit * (page - 1))\
+                .order_by(sql.desc(self.track_table.c.datetime))
+            res = con.execute(stmt)
+            result = res.fetchall()
         return result

@@ -41,12 +41,10 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         )
 
     def tearDown(self):
-        d = sql.delete(
-            self.storage.track_table,
-            self.storage.track_table.c.id > 0)
-        con = self.storage._get_connection()
-        con.execute(d)
-        self.storage._close_connection(con)
+        meta = sql.MetaData()
+        meta.reflect(bind=self.storage._eng)
+        for table in reversed(meta.sorted_tables):
+            self.storage._eng.execute(table.delete())
 
     def setUp(self):
         self.given_table_name = 'my_usage'
