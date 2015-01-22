@@ -17,7 +17,7 @@ Installation
 ------------
 
 .. warning::
-   This release is not 100% backwards compatible with the 0.0.x series of releases.
+   1.0.x releases are not 100% backwards compatible with the 0.0.x series of releases.
 
 Requirements
 ~~~~~~~~~~~~
