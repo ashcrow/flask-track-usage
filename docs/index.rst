@@ -17,7 +17,7 @@ Installation
 ------------
 
 .. warning::
-   1.0.x releases are not 100% backwards compatible with the 0.0.x series of releases.
+   1.1.x releases are not 100% backwards compatible with the 1.x.x nor 0.0.x series of releases.
 
 Requirements
 ~~~~~~~~~~~~
@@ -48,6 +48,8 @@ Usage
 
     # Set the configuration items manually for the example
     app.config['TRACK_USAGE_USE_FREEGEOIP'] = False
+    # You can use a different instance of freegeoip like so
+    # app.config['TRACK_USAGE_FREEGEOIP_ENDPOINT'] = 'https://example.org/api/'
     app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
 
     # We will just print out the data for the example
@@ -110,6 +112,13 @@ TRACK_USAGE_USE_FREEGEOIP
 **Values**: True, False
 
 **Default**: False
+
+TRACK_USAGE_FREEGEOIP_ENDPOINT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Values**: URL
+
+**Default**: http://freegeoip.net/json/
+
 
 Turn FreeGeoIP integration on or off
 
@@ -177,6 +186,7 @@ Results that are returned from all instances of get_usage should **always** look
              'view_args': dict or None
              'status': int,
              'remote_addr': str,
+             'xforwardedfor': str,
              'authorization': bool
              'ip_info': str or None,
              'path': str,
