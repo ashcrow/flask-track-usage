@@ -81,18 +81,18 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[6] is None
         assert result[8] == 200
         assert result[9] is None
-        assert result[10] == False
-        assert result[11] is None
-        assert result[12] == '/'
-        assert result[13].__class__ is float
-        assert type(result[14]) is datetime.datetime
+        assert result[10] == None
+        assert result[11] == False
+        assert result[12] is None
+        assert result[13] == '/'
+        assert result[14].__class__ is float
+        assert type(result[15]) is datetime.datetime
 
     def test_storage_data_blueprint(self):
         self.client.get('/blueprint')
         con = self.storage._eng.connect()
         s = sql.select([self.storage.track_table])
         result = con.execute(s).fetchone()
-        #assert result[0] == 1 # first row
         assert result[1] == u'http://localhost/blueprint'
         assert result[2] is None
         assert result[3] is None
@@ -101,18 +101,17 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[6] == 'blueprint'
         assert result[8] == 200
         assert result[9] is None
-        assert result[10] == False
-        assert result[11] is None
-        assert result[12] == '/blueprint'
-        assert result[13].__class__ is float
-        assert type(result[14]) is datetime.datetime
+        assert result[10] is None
+        assert result[11] == False
+        assert result[12] is None
+        assert result[13] == '/blueprint'
+        assert result[14].__class__ is float
+        assert type(result[15]) is datetime.datetime
 
     def test_storage__get_raw(self):
         # First check no blueprint case get_usage is correct
         self.client.get('/')
         result = self.storage._get_raw()[0]
-        #assert result[0] == 1 # first row
-        print result
         assert result[1] == u'http://localhost/'
         assert result[2] is None
         assert result[3] is None
@@ -121,16 +120,18 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[6] is None
         assert result[8] == 200
         assert result[9] is None
-        assert result[10] == False
-        assert result[11] is None
-        assert result[12] == '/'
-        assert result[13].__class__ is float
-        assert type(result[14]) is datetime.datetime
+        assert result[10] is None
+        assert result[11] == False
+        assert result[12] is None
+        assert result[13] == '/'
+        assert result[14].__class__ is float
+        assert type(result[15]) is datetime.datetime
 
         # Next check with blueprint the get_usage is correct
         self.client.get('/blueprint')
         rows = self.storage._get_raw()
-        result = rows[1] if rows[0][6] is None else rows[0]
+        print rows[1]
+        result = rows[1]# if rows[0][6] is None else rows[0]
         #assert result[0] == 2 # first row
         assert result[1] == u'http://localhost/blueprint'
         assert result[2] is None
@@ -140,11 +141,12 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[6] == 'blueprint'
         assert result[8] == 200
         assert result[9] is None
-        assert result[10] == False
-        assert result[11] is None
-        assert result[12] == '/blueprint'
-        assert result[13].__class__ is float
-        assert type(result[14]) is datetime.datetime
+        assert result[10] is None
+        assert result[11] == False
+        assert result[12] is None
+        assert result[13] == '/blueprint'
+        assert result[14].__class__ is float
+        assert type(result[15]) is datetime.datetime
 
         # third get
         self.client.get('/')
@@ -175,11 +177,12 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[6] == result2['blueprint']
         assert result[8] == result2['status']
         assert result[9] == result2['remote_addr']
-        assert result[10] == result2['authorization']
-        assert result[11] == result2['ip_info']
-        assert result[12] == result2['path']
-        assert result[13] == result2['speed']
-        assert result[14] == result2['date']
+        assert result[10] == result2['xforwardedfor']
+        assert result[11] == result2['authorization']
+        assert result[12] == result2['ip_info']
+        assert result[13] == result2['path']
+        assert result[14] == result2['speed']
+        assert result[15] == result2['date']
 
     def test_storage_get_usage(self):
         self.client.get('/')
@@ -194,11 +197,12 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[6] == result2['blueprint']
         assert result[8] == result2['status']
         assert result[9] == result2['remote_addr']
-        assert result[10] == result2['authorization']
-        assert result[11] == result2['ip_info']
-        assert result[12] == result2['path']
-        assert result[13] == result2['speed']
-        assert result[14] == result2['date']
+        assert result[10] == result2['xforwardedfor']
+        assert result[11] == result2['authorization']
+        assert result[12] == result2['ip_info']
+        assert result[13] == result2['path']
+        assert result[14] == result2['speed']
+        assert result[15] == result2['date']
 
     def test_storage_get_usage_pagination(self):
         # test pagination
@@ -223,11 +227,12 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
             assert result[i][6] == result2[i]['blueprint']
             assert result[i][8] == result2[i]['status']
             assert result[i][9] == result2[i]['remote_addr']
-            assert result[i][10] == result2[i]['authorization']
-            assert result[i][11] == result2[i]['ip_info']
-            assert result[i][12] == result2[i]['path']
-            assert result[i][13] == result2[i]['speed']
-            assert result[i][14] == result2[i]['date']
+            assert result[i][10] == result2[i]['xforwardedfor']
+            assert result[i][11] == result2[i]['authorization']
+            assert result[i][12] == result2[i]['ip_info']
+            assert result[i][13] == result2[i]['path']
+            assert result[i][14] == result2[i]['speed']
+            assert result[i][15] == result2[i]['date']
 
 
 @unittest.skipUnless(HAS_POSTGRES, "Requires psycopg2 Postgres package")

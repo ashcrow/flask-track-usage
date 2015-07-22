@@ -83,6 +83,7 @@ class SQLStorage(Storage):
                     sql.Column('view_args', sql.String(64)),
                     sql.Column('status', sql.Integer),
                     sql.Column('remote_addr', sql.String(24)),
+                    sql.Column('xforwardedfor', sql.String(24)),
                     sql.Column('authorization', sql.Boolean),
                     sql.Column('ip_info', sql.String(128)),
                     sql.Column('path', sql.String(32)),
@@ -114,6 +115,7 @@ class SQLStorage(Storage):
                 view_args=json.dumps(data["view_args"], ensure_ascii=False),
                 status=data["status"],
                 remote_addr=data["remote_addr"],
+                xforwardedfor=data["xforwardedfor"],
                 authorization=data["authorization"],
                 ip_info=data["ip_info"],
                 path=data["path"],
@@ -140,11 +142,12 @@ class SQLStorage(Storage):
                 'view_args': r[7] if r[7] != '{}' else None,
                 'status': int(r[8]),
                 'remote_addr': r[9],
-                'authorization': r[10],
-                'ip_info': r[11],
-                'path': r[12],
-                'speed': r[13],
-                'date': r[14]
+                'xforwardedfor': r[10],
+                'authorization': r[11],
+                'ip_info': r[12],
+                'path': r[13],
+                'speed': r[14],
+                'date': r[15]
             } for r in raw_data]
         return usage_data
 

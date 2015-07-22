@@ -131,11 +131,6 @@ class TrackUsage(object):
             speed = float("%s.%s" % (
                 speed_result.seconds, speed_result.microseconds))
 
-        # Try to be smart and get the right IP address
-        remote_addr = ctx.request.remote_addr
-        if ctx.request.headers.get('X-Forwarded-For', None):
-            remote_addr = ctx.request.headers['X-Forwarded-For']
-
         data = {
             'url': ctx.request.url,
             'user_agent': ctx.request.user_agent,
@@ -143,7 +138,7 @@ class TrackUsage(object):
             'view_args': ctx.request.view_args,
             'status': response.status_code,
             'remote_addr': ctx.request.remote_addr,
-            'X-Forwarded-For': ctx.request.headers.get(
+            'xforwardedfor': ctx.request.headers.get(
                 'X-Forwarded-For', None),
             'authorization': bool(ctx.request.authorization),
             'ip_info': None,
