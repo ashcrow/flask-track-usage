@@ -69,7 +69,10 @@ class SQLStorage(Storage):
             raise ValueError("Both conn_str and db cannot be None")
         self._con = None
         with self._eng.begin() as self._con:
-            meta = sql.MetaData()
+            if db:
+                meta = db.metadata
+            else:
+                meta = sql.MetaData()
             if not self._con.dialect.has_table(self._con, table_name):
                 self.track_table = sql.Table(
                     table_name, meta,
