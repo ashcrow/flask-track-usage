@@ -123,7 +123,7 @@ class MongoStorage(_MongoStorage):
            - `password`: Optional password to authenticate with.
         """
         import pymongo
-        self.connection = pymongo.Connection(host, port)
+        self.connection = pymongo.MongoClient(host, port)
         self.db = getattr(self.connection, database)
         if username and password:
             self.db.authenticate(username, password)
