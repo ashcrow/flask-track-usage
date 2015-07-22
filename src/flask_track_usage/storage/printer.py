@@ -48,4 +48,4 @@ class PrintStorage(Storage):
         :Parameters:
            - `data`: Data to store.
         """
-        print data
+        print(data)
