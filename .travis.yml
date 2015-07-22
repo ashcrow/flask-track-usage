@@ -6,9 +6,9 @@ services:
 before_script:
   - mysql -e 'create database track_usage_test;'
   - psql -c 'create database track_usage_test;' -U postgres
-  - pip install coverage pep8 pymongo sqlalchemy psycopg2 mysql-python --use-mirrors
+  - pip install coverage pep8 pymongo sqlalchemy psycopg2 mysql-python
 install:
-  - pip install -e . --use-mirrors
+  - pip install -e .
 script:
   - pep8 --repeat src/
   - nosetests --with-coverage --cover-package=flask_track_usage --cover-min-percentage=80 -v test/*.py
