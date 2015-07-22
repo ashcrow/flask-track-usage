@@ -143,7 +143,8 @@ class TrackUsage(object):
             'view_args': ctx.request.view_args,
             'status': response.status_code,
             'remote_addr': ctx.request.remote_addr,
-            'X-Forwarded-For': ctx.request.headers.get('X-Forwarded-For', None),
+            'X-Forwarded-For': ctx.request.headers.get(
+                'X-Forwarded-For', None),
             'authorization': bool(ctx.request.authorization),
             'ip_info': None,
             'path': ctx.request.path,
