@@ -47,35 +47,38 @@ class SQLStorage(Storage):
        SQLStorage was added.
     """
 
-    def set_up(self, conn_str=None, table_name="flask_usage", db=None):
+    def set_up(self, engine=None, metadata=None, table_name="flask_usage",
+               db=None):
         """
-        Sets the SQLAlchemy database
+        Sets the SQLAlchemy database. There are two ways to initialize the
+        SQLStorage: 1) by passing the SQLAlchemy `engine` and `metadata`
+        instances or 2) by passing the Flask-SQLAlchemy's `SQLAlchemy`
+        object `db`.
 
         :Parameters:
-           - `conn_str`: The SQLAlchemy connection string
+           - `engine`: The SQLAlchemy engine object
+           - `metadata`: The SQLAlchemy MetaData object
            - `table_name`: Table name for storing the analytics. Defaults to \
                            `flask_usage`.
-           - `db`: Instead of providing the conn_str, one can optionally
+           - `db`: Instead of providing the engine, one can optionally
                    provide the Flask-SQLAlchemy's SQLALchemy object created as
                    SQLAlchemy(app).
         """
 
         import sqlalchemy as sql
-        if db is not None:
+        if db:
             self._eng = db.engine
-        elif conn_str is not None:
-            self._eng = sql.create_engine(conn_str)
+            self._metadata = db.metadata
         else:
-            raise ValueError("Both conn_str and db cannot be None")
+            if engine is None:
+                raise ValueError("Both db and engine args cannot be None")
+            self._eng = engine
+            self._metadata = metadata or sql.MetaData()
         self._con = None
         with self._eng.begin() as self._con:
-            if db:
-                meta = db.metadata
-            else:
-                meta = sql.MetaData()
             if not self._con.dialect.has_table(self._con, table_name):
                 self.track_table = sql.Table(
-                    table_name, meta,
+                    table_name, self._metadata,
                     sql.Column('id', sql.Integer, primary_key=True),
                     sql.Column('url', sql.String(128)),
                     sql.Column('ua_browser', sql.String(16)),
@@ -93,10 +96,9 @@ class SQLStorage(Storage):
                     sql.Column('speed', sql.Float),
                     sql.Column('datetime', sql.DateTime)
                 )
-                meta.create_all(self._eng)
             else:
-                meta.reflect(bind=self._eng)
-                self.track_table = meta.tables[table_name]
+                self._metadata.reflect(bind=self._eng)
+                self.track_table = self._metadata.tables[table_name]
 
     def store(self, data):
         """
