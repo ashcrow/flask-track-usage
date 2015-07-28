@@ -97,14 +97,14 @@ class Storage(object):
            If *page* is not incremented you will always receive the
            first *limit* amount of results.
 
-        .. versionadded:: 1.0.0
-           The *page* parameter.
-
         :Parameters:
            - `start_date`: datetime.datetime representation of starting date
            - `end_date`: datetime.datetime representation of ending date
            - `limit`: The max amount of results to return
            - `page`: Result page number limited by `limit` number in a page
+
+        .. versionadded:: 1.0.0
+           The *page* parameter.
         """
         raw_data = self._get_usage(start_date, end_date, limit, page)
         if type(raw_data) != list:

@@ -6,7 +6,7 @@ Basic metrics tracking for your `Flask`_ application. This focuses more on ip ad
 * Simple. It's a Flask extension.
 * Supports either include or exempt for views.
 * Provides lite abstraction for data retrieval.
-* Optional `freegeoip.net <http://freegeoip.net/>`_ integration.
+* Optional `freegeoip.net <http://freegeoip.net/>`_ integration including custom freegeoip installs.
 * Multiple storage options.
 
 
@@ -76,7 +76,9 @@ Blueprint Support
 -----------------
 Blueprints can be included or excluded from Flask-TrackUsage in their entirety.
 
-::
+Include
+~~~~~~~
+.. code-block:: python
 
     # ...
     app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
@@ -87,11 +89,13 @@ Blueprints can be included or excluded from Flask-TrackUsage in their entirety.
     from my_blueprints import a_bluprint
 
     # Now ALL of a_blueprint's views will be in the include list
-    t.include_bleprint(a_blueprint)
+    t.include_blueprint(a_blueprint)
 
 
-::
-
+Exclude
+~~~~~~~
+.. code-block:: python
+    
     # ...
     app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'exclude'
 
@@ -142,25 +146,29 @@ The following are built in, ready to use storage backends.
 printer.PrintStorage
 ~~~~~~~~~~~~~~~~~~~~
 .. autoclass:: flask_track_usage.storage.printer.PrintStorage
-
+    :members:
+    :inherited-members:
 
 mongo.MongoPiggybackStorage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autoclass:: flask_track_usage.storage.mongo.MongoPiggybackStorage
     :members:
-
+    :inherited-members:
 
 mongo.MongoStorage
 ~~~~~~~~~~~~~~~~~~
 .. autoclass:: flask_track_usage.storage.mongo.MongoStorage
     :members:
-
+    :inherited-members:
 
 sql.SQLStorage
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
+.. warning::
+   This storage is not backwards compatible with sql.SQLStorage 1.0.x
+
 .. autoclass:: flask_track_usage.storage.sql.SQLStorage
     :members:
-
+    :inherited-members:
 
 Retrieving Data
 ---------------
@@ -197,3 +205,6 @@ Results that are returned from all instances of get_usage should **always** look
          ....
      }
  ]
+
+.. versionchanged:: 1.1.0
+   xforwardfor item added directly after remote_addr

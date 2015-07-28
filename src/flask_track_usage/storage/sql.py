@@ -45,6 +45,12 @@ class SQLStorage(Storage):
 
     .. versionadded:: 1.0.0
        SQLStorage was added.
+    .. versionchanged:: 1.1.0
+       Initialization no longer accepts a connection string.
+    .. versionchanged:: 1.1.0
+       A SQLAlchemy engine instance can optionally be passed in.
+    .. versionchanged:: 1.1.0
+       A SQLAlchemy metadata instance can optionally be passed in.
     """
 
     def set_up(self, engine=None, metadata=None, table_name="flask_usage",
@@ -63,6 +69,9 @@ class SQLStorage(Storage):
            - `db`: Instead of providing the engine, one can optionally
                    provide the Flask-SQLAlchemy's SQLALchemy object created as
                    SQLAlchemy(app).
+
+        .. versionchanged:: 1.1.0
+           xforwardfor column added directly after remote_addr
         """
 
         import sqlalchemy as sql
@@ -106,6 +115,9 @@ class SQLStorage(Storage):
 
         :Parameters:
            - `data`: Data to store.
+
+        .. versionchanged:: 1.1.0
+           xforwardfor column added directly after remote_addr
         """
         user_agent = data["user_agent"]
         utcdatetime = datetime.datetime.fromtimestamp(data['date'])
@@ -130,9 +142,18 @@ class SQLStorage(Storage):
             con.execute(stmt)
 
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
-        '''
+        """
         This is what translates the raw data into the proper structure.
-        '''
+
+        :Parameters:
+           - `start_date`: datetime.datetime representation of starting date
+           - `end_date`: datetime.datetime representation of ending date
+           - `limit`: The max amount of results to return
+           - `page`: Result page number limited by `limit` number in a page
+
+        .. versionchanged:: 1.1.0
+           xforwardfor column added directly after remote_addr
+        """
         raw_data = self._get_raw(start_date, end_date, limit, page)
         usage_data = [
             {
@@ -157,9 +178,18 @@ class SQLStorage(Storage):
         return usage_data
 
     def _get_raw(self, start_date=None, end_date=None, limit=500, page=1):
-        '''
+        """
         This is the raw getter from database
-        '''
+
+        :Parameters:
+           - `start_date`: datetime.datetime representation of starting date
+           - `end_date`: datetime.datetime representation of ending date
+           - `limit`: The max amount of results to return
+           - `page`: Result page number limited by `limit` number in a page
+
+        .. versionchanged:: 1.1.0
+           xforwardfor column added directly after remote_addr
+        """
         import sqlalchemy as sql
         page = max(1, page)   # min bound
         if end_date is None:

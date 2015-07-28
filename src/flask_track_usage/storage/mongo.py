@@ -48,6 +48,9 @@ class _MongoStorage(Storage):
 
         :Parameters:
            - `data`: Data to store.
+
+        .. versionchanged:: 1.1.0
+           xforwardfor item added directly after remote_addr
         """
         ua_dict = {
             'browser': data['user_agent'].browser,
@@ -68,6 +71,9 @@ class _MongoStorage(Storage):
            - `end_date`: datetime.datetime representation of ending date
            - `limit`: The max amount of results to return
            - `page`: Result page number limited by `limit` number in a page
+
+        .. versionchanged:: 1.1.0
+           xforwardfor item added directly after remote_addr
         """
         criteria = {}
 

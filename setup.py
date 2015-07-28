@@ -37,7 +37,7 @@ from setuptools import setup
 
 setup(
     name='Flask-Track-Usage',
-    version='1.0.1',
+    version='1.1.0',
     url='https://github.com/ashcrow/flask-track-usage',
     license='MBSD',
     author='Steve Milner',
