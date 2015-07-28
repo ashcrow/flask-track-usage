@@ -26,7 +26,7 @@ except ImportError:
 import datetime
 import unittest
 from flask import Blueprint
-from . import FlaskTrackUsageTestCase
+from test import FlaskTrackUsageTestCase
 from flask_track_usage import TrackUsage
 from flask_track_usage.storage.sql import SQLStorage
 
@@ -35,10 +35,14 @@ from flask_track_usage.storage.sql import SQLStorage
 class TestSQLiteStorage(FlaskTrackUsageTestCase):
 
     def _create_storage(self):
+        engine = sql.create_engine("sqlite://")
+        metadata = sql.MetaData(bind=engine)
         self.storage = SQLStorage(
-            conn_str="sqlite://",
+            engine=engine,
+            metadata=metadata,
             table_name=self.given_table_name
         )
+        metadata.create_all()
 
     def tearDown(self):
         meta = sql.MetaData()
@@ -240,10 +244,15 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
 class TestPostgresStorage(TestSQLiteStorage):
 
     def _create_storage(self):
+        engine = sql.create_engine(
+            "postgresql+psycopg2://postgres:@localhost/track_usage_test")
+        metadata = sql.MetaData(bind=engine)
         self.storage = SQLStorage(
-            conn_str="postgresql+psycopg2://postgres:@localhost/track_usage_test",
+            engine=engine,
+            metadata=metadata,
             table_name=self.given_table_name
         )
+        metadata.create_all()
 
 
 @unittest.skipUnless(HAS_MYSQL, "Requires mysql-python package")
@@ -251,7 +260,12 @@ class TestPostgresStorage(TestSQLiteStorage):
 class TestMySQLStorage(TestSQLiteStorage):
 
     def _create_storage(self):
+        engine = sql.create_engine(
+            "mysql+mysqldb://travis:@localhost/track_usage_test")
+        metadata = sql.MetaData(bind=engine)
         self.storage = SQLStorage(
-            conn_str="mysql+mysqldb://travis:@localhost/track_usage_test",
+            engine=engine,
+            metadata=metadata,
             table_name=self.given_table_name
         )
+        metadata.create_all()
