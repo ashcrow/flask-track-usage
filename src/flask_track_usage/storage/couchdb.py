@@ -138,4 +138,3 @@ class UsageData(Document):
             emit(doc.datetime, doc);
         }
     }''')
-
