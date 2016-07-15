@@ -1,0 +1,4 @@
+flask==0.10
+pymongo
+sqlalchemy==0.9.7
+couchdb==1.0
