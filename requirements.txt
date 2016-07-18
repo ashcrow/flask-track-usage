@@ -1,4 +1,4 @@
-flask==0.10
+flask
 pymongo
-sqlalchemy==0.9.7
-couchdb==1.0
+sqlalchemy
+couchdb>=1.0

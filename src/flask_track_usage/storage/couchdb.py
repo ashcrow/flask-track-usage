@@ -119,6 +119,7 @@ class CouchDBStorage(_CouchDBStorage):
 
 
 class UsageData(Document):
+    """Document that represents the stored data"""
     url = TextField()
     ua_browser = TextField()
     ua_language = TextField()
