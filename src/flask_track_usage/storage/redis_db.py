@@ -152,4 +152,4 @@ class RedisStorage(_RedisStorage):
         from redis import Redis
         self.db = Redis.from_url("redis://{0}:{1}".format(host, str(port)))
         assert self.db is not None
-        assert self.db.ping() == True
+        assert self.db.ping() is True
