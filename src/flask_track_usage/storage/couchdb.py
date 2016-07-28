@@ -32,19 +32,47 @@
 Simple couchdb storage.
 """
 from __future__ import absolute_import
+
 import json
 
 from flask_track_usage.storage import Storage
 
 from datetime import datetime
-from couchdb.mapping import Document, TextField, IntegerField,\
-    DateTimeField, FloatField, BooleanField, ViewField
-from couchdb.http import PreconditionFailed
+try:
+    from couchdb.mapping import Document, TextField, IntegerField,\
+        DateTimeField, FloatField, BooleanField, ViewField
+
+    class UsageData(Document):
+        """
+        Document that represents the stored data.
+        """
+        url = TextField()
+        ua_browser = TextField()
+        ua_language = TextField()
+        ua_platform = TextField()
+        ua_version = TextField()
+        blueprint = TextField()
+        view_args = TextField()
+        status = IntegerField()
+        remote_addr = TextField()
+        authorization = BooleanField()
+        ip_info = TextField()
+        path = TextField()
+        speed = FloatField()
+        datetime = DateTimeField(default=datetime.now)
+        by_date = ViewField('start-end', '''function(doc, req) {
+            if (!doc._conflicts) {
+                emit(doc.datetime, doc);
+            }
+        }''')
+
+except ImportError:
+    pass
 
 
 class _CouchDBStorage(Storage):
     """
-    Parent storage class for Mongo storage.
+    Parent storage class for CouchDB storage.
     """
 
     def store(self, data):
@@ -93,6 +121,8 @@ class _CouchDBStorage(Storage):
 class CouchDBStorage(_CouchDBStorage):
     """
     Creates it's own connection for storage.
+
+    .. versionadded:: 1.1.1
     """
 
     def set_up(self, database, host='127.0.0.1', port=5984,
@@ -109,6 +139,7 @@ class CouchDBStorage(_CouchDBStorage):
            - `password`: Optional password to authenticate with.
         """
         import couchdb
+        from couchdb.http import PreconditionFailed
         self.connection = couchdb.Server("{0}://{1}:{2}".format(protocol,
                                                                 host, port))
         try:
@@ -116,26 +147,3 @@ class CouchDBStorage(_CouchDBStorage):
         except PreconditionFailed as e:
             self.db = self.connection[database]
             print e
-
-
-class UsageData(Document):
-    """Document that represents the stored data"""
-    url = TextField()
-    ua_browser = TextField()
-    ua_language = TextField()
-    ua_platform = TextField()
-    ua_version = TextField()
-    blueprint = TextField()
-    view_args = TextField()
-    status = IntegerField()
-    remote_addr = TextField()
-    authorization = BooleanField()
-    ip_info = TextField()
-    path = TextField()
-    speed = FloatField()
-    datetime = DateTimeField(default=datetime.now)
-    by_date = ViewField('start-end', '''function(doc, req) {
-        if (!doc._conflicts) {
-            emit(doc.datetime, doc);
-        }
-    }''')

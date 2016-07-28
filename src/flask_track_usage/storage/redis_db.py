@@ -31,7 +31,9 @@
 """
 Simple redis storage.
 """
+
 from __future__ import absolute_import
+
 import json
 
 from datetime import datetime
@@ -41,7 +43,7 @@ from flask_track_usage.storage import Storage
 
 class _RedisStorage(Storage):
     """
-    Parent storage class for Mongo storage.
+    Parent storage class for Redis storage.
     """
 
     def store(self, data):
@@ -112,8 +114,13 @@ class _RedisStorage(Storage):
 
     @staticmethod
     def _construct_struct_name(date):
-        """Construct a name based on a given date, that will be used as a key
-        identifier."""
+        """
+        Construct a name based on a given date, that will be used as a key
+        identifier.
+
+        :Parameters:
+           - `date`: Date to use as part of the construct key.
+        """
         # Strip away the - from the date
         tmp = "".join(str(date.date()).rsplit("-"))
 
@@ -123,7 +130,13 @@ class _RedisStorage(Storage):
 
     @staticmethod
     def _pattern_stop(date1, date2):
-        """Find where there is a difference in the pattern"""
+        """
+        Find where there is a difference in the pattern.
+
+        :Parameters:
+           - `date1`: First datetime instance to compare.
+           - `date2`: Second datetime instance to compare.
+        """
         for i in xrange(len(date1)):
             if date1[i] != date2[i]:
                 return i
@@ -139,7 +152,10 @@ class _RedisStorage(Storage):
 class RedisStorage(_RedisStorage):
     """
     Creates it's own connection for storage.
+
+    .. versionadded:: 1.1.1
     """
+
     def set_up(self, host='127.0.0.1', port=6379, password=None):
         """
         Sets up redis and checks that you have connected to it.

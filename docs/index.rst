@@ -145,7 +145,16 @@ The following are built in, ready to use storage backends.
 
 printer.PrintStorage
 ~~~~~~~~~~~~~~~~~~~~
+.. note::
+   This storage backend is only for testing!
+
 .. autoclass:: flask_track_usage.storage.printer.PrintStorage
+    :members:
+    :inherited-members:
+
+couchdb.CouchDBStorage
+~~~~~~~~~~~~~~~~~~~~~~
+.. autoclass:: flask_track_usage.storage.couchdb.CouchDBStorage
     :members:
     :inherited-members:
 
@@ -158,6 +167,12 @@ mongo.MongoPiggybackStorage
 mongo.MongoStorage
 ~~~~~~~~~~~~~~~~~~
 .. autoclass:: flask_track_usage.storage.mongo.MongoStorage
+    :members:
+    :inherited-members:
+
+redis_db.RedisStorage
+~~~~~~~~~~~~~~~~~~~~~
+.. autoclass:: flask_track_usage.storage.redis_db.RedisStorage
     :members:
     :inherited-members:
 
