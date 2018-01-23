@@ -81,7 +81,7 @@ class TestMongoPiggybaclStorage(FlaskTrackUsageTestCase):
         assert result['blueprint'] is None
         assert result['ip_info'] is None
         assert result['status'] == 200
-        assert result['remote_addr'] is None  # because of testing
+        self.assertTrue(result['remote_addr'])  # Should be set with modern versions of Flask
         assert result['speed'].__class__ is float
         assert result['view_args'] == {}
         assert result['url'] == 'http://localhost/'
@@ -123,7 +123,7 @@ class TestMongoStorage(FlaskTrackUsageTestCase):
         assert result['blueprint'] is None
         assert result['ip_info'] is None
         assert result['status'] == 200
-        assert result['remote_addr'] is None  # because of testing
+        self.assertTrue(result['remote_addr'])  # Should be set with modern versions of Flask
         assert result['speed'].__class__ is float
         assert result['view_args'] == {}
         assert result['url'] == 'http://localhost/'
