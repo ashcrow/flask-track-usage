@@ -203,7 +203,7 @@ class MongoEngineStorage(_MongoStorage):
         doc.username = data['username']
         # the following is VERY MUCH A HACK to allow a passed-in 'doc' on set_up
         ua = doc._fields['user_agent'].document_type_obj()
-        ua.browser = str(data['user_agent'].browser)
+        ua.browser = data['user_agent'].browser
         if data['user_agent'].language:
             ua.language = data['user_agent'].language
         ua.platform = data['user_agent'].platform
