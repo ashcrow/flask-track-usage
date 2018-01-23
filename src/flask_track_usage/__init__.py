@@ -153,8 +153,20 @@ class TrackUsage(object):
             'ip_info': None,
             'path': ctx.request.path,
             'speed': float(speed),
-            'date': int(time.mktime(now.timetuple()))
+            'date': int(time.mktime(now.timetuple())),
+            'content_length': response.content_length,
+            'request': "{} {} {}".format(
+                ctx.request.method,
+                ctx.request.url,
+                ctx.request.environ.get('SERVER_PROTOCOL')
+            ),
+            'url_args': dict(
+                [(k,ctx.request.args[k]) for k in ctx.request.args]
+            ),
+            'username': None
         }
+        if ctx.request.authorization:
+            data['username'] = str(ctx.request.authorization.username)
         if self._use_freegeoip:
             clean_ip = quote_plus(str(ctx.request.remote_addr))
             if '{ip}' in self._freegeoip_endpoint:
