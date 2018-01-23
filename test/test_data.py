@@ -58,16 +58,16 @@ class TestData(FlaskTrackUsageTestCase):
         """
         self.client.get('/')
         result = self.storage.get()
-        assert result.__class__ is dict
-        assert result['blueprint'] is None
-        assert result['ip_info'] is None
-        assert result['status'] == 200
-        assert result['remote_addr'] is None  # because of testing
-        assert result['speed'].__class__ is float
-        assert result['view_args'] == {}
-        assert result['url'] == 'http://localhost/'
-        assert result['path'] == '/'
-        assert result['authorization'] is False
-        assert result['user_agent'].string == ""  # because of testing
-        assert type(result['date']) is int
-        datetime.datetime.fromtimestamp(result['date'])
+        self.assertEquals(result.__class__, dict)
+        self.assertIsNone(result['blueprint'])
+        self.assertIsNone(result['ip_info'])
+        self.assertEquals(result['status'], 200)
+        self.assertEquals(result['remote_addr'], '127.0.0.1')
+        self.assertEquals(result['speed'].__class__, float)
+        self.assertEquals(result['view_args'], {})
+        self.assertEquals(result['url'], 'http://localhost/')
+        self.assertEquals(result['path'], '/')
+        self.assertEquals(result['authorization'], False)
+        self.assertTrue(result['user_agent'].string.startswith('werkzeug'))
+        self.assertEquals(type(result['date']), int)
+        self.assertTrue(datetime.datetime.fromtimestamp(result['date']))
