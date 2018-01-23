@@ -37,6 +37,7 @@ import unittest
 
 COLLECTION = False
 HAS_PYMONGO = False
+HAS_MONGOENGINE = False
 
 try:
     import pymongo
@@ -49,8 +50,19 @@ except ImportError:
 except pymongo.errors.ConnectionFailure:
     COLLECTION = False
 
+try:
+    import mongoengine
+    HAS_MONGOENGINE = True
+    mongoengine.connect(db="mongoenginetest")
+except ImportError:
+    pass
+
 from flask_track_usage import TrackUsage
-from flask_track_usage.storage.mongo import MongoPiggybackStorage, MongoStorage
+from flask_track_usage.storage.mongo import (
+    MongoPiggybackStorage,
+    MongoStorage,
+    MongoEngineStorage
+)
 
 from . import FlaskTrackUsageTestCase
 
@@ -158,3 +170,45 @@ class TestMongoStorage(FlaskTrackUsageTestCase):
         assert len(self.storage.get_usage(start_date=now)) == 0
         assert len(self.storage.get_usage(end_date=now)) == 3
         assert len(self.storage.get_usage(end_date=now, limit=2)) == 2
+
+
+@unittest.skipUnless(HAS_MONGOENGINE, "Requires MongoEngine")
+@unittest.skipUnless(COLLECTION, "Requires a running test MongoDB")
+class TestMongoEngineStorage(FlaskTrackUsageTestCase):
+    """
+    Tests MongoEngine storage.
+    """
+
+    def setUp(self):
+        """
+        Set up an app to test with.
+        """
+        FlaskTrackUsageTestCase.setUp(self)
+        self.storage = MongoEngineStorage()
+        # Clean out the storage
+        self.storage.collection.drop_collection()
+        self.track_usage = TrackUsage(self.app, self.storage)
+
+    def test_mongo_piggyback_storage(self):
+        """
+        Test MongoEngineStorages stores the data the way we expect.
+        """
+        self.client.get('/')
+        doc = self.storage.collection.objects.first()
+        assert doc.blueprint is None
+        assert doc.ip_info is None
+        assert doc.status == 200
+        self.assertTrue(doc.remote_addr)  # Should be set with modern versions of Flask
+        assert doc.speed.__class__ is float
+        assert doc.view_args == {}
+        assert doc.url_args == {}
+        assert doc.url == 'http://localhost/'
+        assert doc.authorization is False
+        assert doc.user_agent.browser is None  # because of testing
+        assert doc.user_agent.platform is None  # because of testing
+        assert doc.user_agent.language is None  # because of testing
+        assert doc.user_agent.version is None  # because of testing
+        assert doc.content_length == 6
+        assert doc.path == '/'
+        assert type(doc.date) is datetime.datetime
+
