@@ -134,3 +134,92 @@ class MongoStorage(_MongoStorage):
         if username and password:
             self.db.authenticate(username, password)
         self.collection = getattr(self.db, collection)
+
+
+class MongoEngineStorage(_MongoStorage):
+    """
+    Uses a MongoEngine class to store data.
+    """
+
+    def set_up(self, doc=None, website=None):
+        import mongoengine as db
+        """
+        Sets the collection name and website "grouping".
+
+        :Parameters:
+           - `collection_name`: name for the MongoDB collection. Defaults to "usageTracking".
+           - 'website': name for the website. Defaults to 'default'. Useful when multiple websites are
+             saving data to the same collection.
+        """
+
+        class UserAgent(db.EmbeddedDocument):
+            browser = db.StringField()
+            language = db.StringField()
+            platform = db.StringField()
+            version = db.StringField()
+
+        class UsageTracker(db.Document):
+            date = db.DateTimeField(required=True, default=datetime.datetime.now)
+            website = db.StringField(required=True, default="default")
+            blueprint = db.StringField(default=None)
+            view_args = db.DictField()
+            ip_info = db.StringField()
+            xforwardedfor = db.StringField()
+            path = db.StringField()
+            speed = db.FloatField()
+            remote_addr = db.StringField()
+            url = db.StringField()
+            status = db.IntField()
+            authorization = db.BooleanField()
+            content_length = db.IntField()
+            url_args = db.DictField()
+            username = db.StringField()
+            user_agent = db.EmbeddedDocumentField(UserAgent)
+            apache_combined_log = db.StringField()
+            meta = {
+                'collection': "usageTracking"
+            }
+
+        self.collection = doc or UsageTracker
+        # self.user_agent = UserAgent
+        self.website = website or 'default'
+
+    def store(self, data):
+        doc = self.collection()
+        doc.date = datetime.datetime.fromtimestamp(data['date'])
+        doc.website = self.website
+        doc.blueprint = data['blueprint']
+        doc.view_args = data['view_args']
+        doc.ip_info = data['ip_info']
+        doc.xforwardedfor = data['xforwardedfor']
+        doc.path = data['path']
+        doc.speed = data['speed']
+        doc.remote_addr = data['remote_addr']
+        doc.url = data['url']
+        doc.status = data['status']
+        doc.authorization = data['authorization']
+        doc.content_length = data['content_length']
+        doc.url_args = data['url_args']
+        doc.username = data['username']
+        # the following is VERY MUCH A HACK to allow a passed-in 'doc' on set_up
+        ua = doc._fields['user_agent'].document_type_obj()
+        ua.browser = str(data['user_agent'].browser)
+        if data['user_agent'].language:
+            ua.language = data['user_agent'].language
+        ua.platform = data['user_agent'].platform
+        if data['user_agent'].version:
+            ua.version = str(data['user_agent'].version)
+        doc.user_agent = ua
+        t = '{h} - {u} [{t}] "{r}" {s} {b} "{referer}" "{useragent}"'.format(
+            h=data['remote_addr'],
+            u=data["username"] or '-',
+            t=doc.date.strftime("%d/%b/%Y:%H:%M:%S %z"),
+            r=data.get("request", '?'),
+            s=data['status'],
+            b=data['content_length'],
+            referer=data['url'],
+            useragent=str(data['user_agent'])
+        )
+        doc.apache_combined_log = t
+        doc.save()
+        return doc
