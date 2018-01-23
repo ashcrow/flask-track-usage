@@ -55,13 +55,17 @@ class TrackUsage(object):
 
         :Parameters:
            - `app`: Optional app to use.
-           - `storage`: If app is set you must pass the storage callable now.
+           - `storage`: If app is set you must pass the storage callables now.
         """
         self._exclude_views = set()
         self._include_views = set()
 
+        if callable(storage):
+            storage = [storage]
+
         if app is not None and storage is not None:
-            self.init_app(app, storage)
+            for storage_instance in storage:
+                self.init_app(app, storage_instance)
 
     def init_app(self, app, storage):
         """
@@ -238,8 +242,8 @@ if __name__ == '__main__':
     # We will just print out the data for the example
     from flask_track_usage.storage.printer import PrintStorage
 
-    # Make an instance of the extension
-    t = TrackUsage(app, PrintStorage())
+    # Make an instance of the extension and put two PrintStorages
+    t = TrackUsage(app, [PrintStorage(), PrintStorage()])
 
     # Include the view in the metrics
     @t.include
