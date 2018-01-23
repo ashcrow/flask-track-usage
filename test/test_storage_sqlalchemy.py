@@ -84,7 +84,7 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[5] is None
         assert result[6] is None
         assert result[8] == 200
-        assert result[9] is None
+        self.assertTrue(result[9])
         assert result[10] == None
         assert result[11] == False
         assert result[12] is None
@@ -104,7 +104,7 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[5] is None
         assert result[6] == 'blueprint'
         assert result[8] == 200
-        assert result[9] is None
+        self.assertTrue(result[9])
         assert result[10] is None
         assert result[11] == False
         assert result[12] is None
@@ -123,7 +123,7 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[5] is None
         assert result[6] is None
         assert result[8] == 200
-        assert result[9] is None
+        self.assertTrue(result[9])
         assert result[10] is None
         assert result[11] == False
         assert result[12] is None
@@ -144,7 +144,7 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[5] is None
         assert result[6] == 'blueprint'
         assert result[8] == 200
-        assert result[9] is None
+        self.assertTrue(result[9])
         assert result[10] is None
         assert result[11] == False
         assert result[12] is None
