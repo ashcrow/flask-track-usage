@@ -7,7 +7,9 @@ Basic metrics tracking for your `Flask`_ application. This focuses more on ip ad
 * Supports either include or exempt for views.
 * Provides lite abstraction for data retrieval.
 * Optional `freegeoip.net <http://freegeoip.net/>`_ integration including custom freegeoip installs.
-* Multiple storage options.
+* Multiple storage options available.
+* Multiple storage options can be used.
+* Pluggable functionality for storage instances
 
 
 .. _Flask: http://flask.pocoo.org/
@@ -15,9 +17,6 @@ Basic metrics tracking for your `Flask`_ application. This focuses more on ip ad
 
 Installation
 ------------
-
-.. warning::
-   1.1.x releases are not 100% backwards compatible with the 1.x.x nor 0.0.x series of releases.
 
 Requirements
 ~~~~~~~~~~~~
@@ -56,8 +55,8 @@ Usage
     from flask.ext.track_usage import TrackUsage
     from flask.ext.track_usage.storage.printer import PrintStorage
 
-    # Make an instance of the extension
-    t = TrackUsage(app, PrintStorage())
+    # Make an instance of the extension and put two PrintStorages
+    t = TrackUsage(app, [PrintStorage(), PrintStorage()])
 
     # Make an instance of the extension
     t = TrackUsage(app, storage)
@@ -169,6 +168,7 @@ mongo.MongoStorage
 .. autoclass:: flask_track_usage.storage.mongo.MongoStorage
     :members:
     :inherited-members:
+
 
 redis_db.RedisStorage
 ~~~~~~~~~~~~~~~~~~~~~
