@@ -138,18 +138,30 @@ class MongoStorage(_MongoStorage):
 
 class MongoEngineStorage(_MongoStorage):
     """
-    Uses a MongoEngine class to store data.
+    Uses MongoEngine library to store data in MongoDB.
+
+    The resulting collection is named `usageTracking`.
+
+    Should you need to access the actual Document class that this storage uses,
+    you can pull it from `collection` *instance* attribute. For example: ::
+
+    trackerDoc = MongoEngineStorage().collection
     """
 
-    def set_up(self, doc=None, website=None):
+    def set_up(self, doc=None, website=None, apache_log=False):
         import mongoengine as db
         """
-        Sets the collection name and website "grouping".
+        Sets the general settings.
 
         :Parameters:
-           - `collection_name`: name for the MongoDB collection. Defaults to "usageTracking".
-           - 'website': name for the website. Defaults to 'default'. Useful when multiple websites are
-             saving data to the same collection.
+           - `doc`: optional alternate MongoEngine document class.
+           - 'website': name for the website. Defaults to 'default'. Useful
+             when multiple websites are saving data to the same collection.
+           - 'apache_log': if set to True, then an attribute called
+             'apache_combined_log' is set that mimics a line from a traditional
+             apache webserver web log text file.
+
+        .. versionchanged:: 2.0.0
         """
 
         class UserAgent(db.EmbeddedDocument):
@@ -183,6 +195,7 @@ class MongoEngineStorage(_MongoStorage):
         self.collection = doc or UsageTracker
         # self.user_agent = UserAgent
         self.website = website or 'default'
+        self.apache_log = apache_log
 
     def store(self, data):
         doc = self.collection()
@@ -210,16 +223,44 @@ class MongoEngineStorage(_MongoStorage):
         if data['user_agent'].version:
             ua.version = str(data['user_agent'].version)
         doc.user_agent = ua
-        t = '{h} - {u} [{t}] "{r}" {s} {b} "{referer}" "{useragent}"'.format(
-            h=data['remote_addr'],
-            u=data["username"] or '-',
-            t=doc.date.strftime("%d/%b/%Y:%H:%M:%S %z"),
-            r=data.get("request", '?'),
-            s=data['status'],
-            b=data['content_length'],
-            referer=data['url'],
-            useragent=str(data['user_agent'])
-        )
-        doc.apache_combined_log = t
+        if self.apache_log:
+            t = '{h} - {u} [{t}] "{r}" {s} {b} "{referer}" "{useragent}"'.format(
+                h=data['remote_addr'],
+                u=data["username"] or '-',
+                t=doc.date.strftime("%d/%b/%Y:%H:%M:%S %z"),
+                r=data.get("request", '?'),
+                s=data['status'],
+                b=data['content_length'],
+                referer=data['url'],
+                useragent=str(data['user_agent'])
+            )
+            doc.apache_combined_log = t
         doc.save()
         return doc
+
+    def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
+        """
+        Implements the simple usage information by criteria in a standard form.
+
+        :Parameters:
+           - `start_date`: datetime.datetime representation of starting date
+           - `end_date`: datetime.datetime representation of ending date
+           - `limit`: The max amount of results to return
+           - `page`: Result page number limited by `limit` number in a page
+
+        .. versionchanged:: 2.0.0
+        """
+        query = {}
+        if start_date:
+            query["date__gte"] = start_date
+        if end_date:
+            query["date__lte"] = end_date
+        if limit:
+            first = limit * (page - 1)
+            last = limit * page
+            logs = self.collection.objects(**query)[first:last]
+        else:
+            logs = self.collection.objects(**query)
+        result = [log.to_mongo().to_dict() for log in logs]
+        return result
+
