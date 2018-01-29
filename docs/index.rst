@@ -146,12 +146,12 @@ The following are built in, ready to use storage backends.
 
 .. note:: Inputs for set_up should be passed in __init__ when creating a storage instance
 
-printer.PrintStorage
+printer.PrintWriter
 ~~~~~~~~~~~~~~~~~~~~
 .. note::
    This storage backend is only for testing!
 
-.. autoclass:: flask_track_usage.storage.printer.PrintStorage
+.. autoclass:: flask_track_usage.storage.printer.PrintWriter
     :members:
     :inherited-members:
 
