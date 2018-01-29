@@ -1,4 +1,5 @@
 flask
+six
 pymongo
 sqlalchemy
 couchdb>=1.0
