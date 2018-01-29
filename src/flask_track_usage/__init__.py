@@ -168,7 +168,7 @@ class TrackUsage(object):
         if self._use_freegeoip:
             ip_info = json.loads(six.moves.urllib.request.urlopen(
                 self._freegeoip_endpoint + six.moves.urllib_parse.quote_plus(
-                    remote_addr)).read())
+                    ctx.request.remote_addr)).read())
             data['ip_info'] = ip_info
 
         self._storage(data)
