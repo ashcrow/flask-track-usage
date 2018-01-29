@@ -70,7 +70,8 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
 
         meta = sql.MetaData()
         meta.reflect(bind=self.storage._eng)
-        assert self.given_table_name == meta.tables.keys()[0]
+        print(self.given_table_name, list(meta.tables.keys())[0])
+        self.assertEquals(self.given_table_name, list(meta.tables.keys())[0])
 
     def test_storage_data_basic(self):
         self.client.get('/')
@@ -135,7 +136,7 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         # Next check with blueprint the get_usage is correct
         self.client.get('/blueprint')
         rows = self.storage._get_raw()
-        print rows[1]
+        print(rows[1])
         result = rows[1]# if rows[0][6] is None else rows[0]
         #assert result[0] == 2 # first row
         assert result[1] == u'http://localhost/blueprint'
