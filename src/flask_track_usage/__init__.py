@@ -35,7 +35,8 @@ Basic metrics tracking with Flask.
 import datetime
 import json
 import time
-import urllib
+
+import six
 
 from flask import _request_ctx_stack, g
 
@@ -165,8 +166,8 @@ class TrackUsage(object):
         if ctx.request.authorization:
             data['username'] = str(ctx.request.authorization.username)
         if self._use_freegeoip:
-            ip_info = json.loads(urllib.urlopen(
-                self._freegeoip_endpoint + urllib.quote_plus(
+            ip_info = json.loads(six.moves.urllib.request.urlopen(
+                self._freegeoip_endpoint + six.moves.urllib_parse.quote_plus(
                     remote_addr)).read())
             data['ip_info'] = ip_info
 
