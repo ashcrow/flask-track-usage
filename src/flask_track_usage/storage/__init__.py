@@ -33,9 +33,10 @@ Simple storage callables package.
 """
 
 
-class Storage(object):
+class _BaseWritable(object):
     """
-    Subclass for a more intellegent storage callable.
+
+    Base class for writable callables.
     """
 
     def __init__(self, *args, **kwargs):
@@ -75,6 +76,19 @@ class Storage(object):
            - `data`: Data to store.
         """
         return self.store(data)
+
+
+class Writer(_BaseWritable):
+    """
+    Write only classes used to store but not do metrics.
+    """
+    pass
+
+
+class Storage(_BaseWritable):
+    """
+    Subclass for a more intellegent storage callable.
+    """
 
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """
