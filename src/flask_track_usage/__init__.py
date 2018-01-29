@@ -65,8 +65,7 @@ class TrackUsage(object):
             storage = [storage]
 
         if app is not None and storage is not None:
-            for storage_instance in storage:
-                self.init_app(app, storage_instance)
+            self.init_app(app, storage)
 
     def init_app(self, app, storage):
         """
@@ -77,7 +76,7 @@ class TrackUsage(object):
            - `storage`: The storage callable which will store result.
         """
         self.app = app
-        self._storage = storage
+        self._storages = storage
         self._use_freegeoip = app.config.get(
             'TRACK_USAGE_USE_FREEGEOIP', False)
         self._freegeoip_endpoint = app.config.get(
@@ -171,7 +170,8 @@ class TrackUsage(object):
                     ctx.request.remote_addr)).read())
             data['ip_info'] = ip_info
 
-        self._storage(data)
+        for storage in self._storages:
+            storage(data)
         return response
 
     def exclude(self, view):
@@ -253,10 +253,12 @@ if __name__ == '__main__':
     app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
 
     # We will just print out the data for the example
-    from flask_track_usage.storage.printer import PrintStorage
+    from flask_track_usage.storage.printer import PrintWriter
+    from flask_track_usage.storage.output import OutputWriter
 
-    # Make an instance of the extension and put two PrintStorages
-    t = TrackUsage(app, [PrintStorage(), PrintStorage()])
+    # Make an instance of the extension and put two writers
+    t = TrackUsage(app, [PrintWriter(), OutputWriter(
+        transform=lambda s: "OUTPUT: " + str(s))])
 
     # Include the view in the metrics
     @t.include
