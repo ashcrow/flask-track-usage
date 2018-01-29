@@ -60,7 +60,7 @@ class _MongoStorage(Storage):
         }
         data['date'] = datetime.datetime.fromtimestamp(data['date'])
         data['user_agent'] = ua_dict
-        print self.collection.insert(data)
+        print(self.collection.insert(data))
 
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """

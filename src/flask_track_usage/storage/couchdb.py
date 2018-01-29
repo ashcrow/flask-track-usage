@@ -31,8 +31,6 @@
 """
 Simple couchdb storage.
 """
-from __future__ import absolute_import
-
 import json
 
 from flask_track_usage.storage import Storage
@@ -146,4 +144,4 @@ class CouchDBStorage(_CouchDBStorage):
             self.db = self.connection.create(database)
         except PreconditionFailed as e:
             self.db = self.connection[database]
-            print e
+            print(e)
