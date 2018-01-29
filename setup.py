@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2013 Steve Milner
+# Copyright (c) 2013-2018 Steve Milner
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
