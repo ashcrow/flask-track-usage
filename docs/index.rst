@@ -9,8 +9,8 @@ Basic metrics tracking for your `Flask`_ application. This focuses more on ip ad
 * Optional `freegeoip.net <http://freegeoip.net/>`_ integration including custom freegeoip installs.
 * Multiple storage options available.
 * Multiple storage options can be used.
-* Pluggable functionality for storage instances
-
+* Pluggable functionality for storage instances.
+* Supports Python 2.7 and 3+.
 
 .. _Flask: http://flask.pocoo.org/
 
