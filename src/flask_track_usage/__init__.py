@@ -38,6 +38,8 @@ import time
 from six.moves.urllib_parse import quote_plus
 from six.moves.urllib.request import urlopen
 
+import six
+
 from flask import _request_ctx_stack, g
 
 __version__ = '2.0.dev0'

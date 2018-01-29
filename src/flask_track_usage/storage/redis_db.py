@@ -31,9 +31,6 @@
 """
 Simple redis storage.
 """
-
-from __future__ import absolute_import
-
 import json
 
 from datetime import datetime
@@ -104,7 +101,7 @@ class _RedisStorage(Storage):
         # TODO: pipeline data request
         items = []
         for d in data:
-            for item in d.values():
+            for item in list(d.values()):
                 try:
                     # skip items when errors occur
                     items.append(literal_eval(item))
@@ -137,7 +134,7 @@ class _RedisStorage(Storage):
            - `date1`: First datetime instance to compare.
            - `date2`: Second datetime instance to compare.
         """
-        for i in xrange(len(date1)):
+        for i in range(len(date1)):
             if date1[i] != date2[i]:
                 return i
         return -1
