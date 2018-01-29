@@ -53,10 +53,14 @@ Usage
 
     # We will just print out the data for the example
     from flask.ext.track_usage import TrackUsage
-    from flask.ext.track_usage.storage.printer import PrintStorage
 
-    # Make an instance of the extension and put two PrintStorages
-    t = TrackUsage(app, [PrintStorage(), PrintStorage()])
+    # We will just print out the data for the example
+    from flask_track_usage.storage.printer import PrintWriter
+    from flask_track_usage.storage.output import OutputWriter
+
+    # Make an instance of the extension and put two writers
+    t = TrackUsage(app, [PrintWriter(), OutputWriter(
+        transform=lambda s: "OUTPUT: " + str(s))])
 
     # Make an instance of the extension
     t = TrackUsage(app, storage)
@@ -182,6 +186,10 @@ mongo.MongoStorage
 mongo.MongoEngineStorage
 ~~~~~~~~~~~~~~~~~~
 .. autoclass:: flask_track_usage.storage.mongo.MongoEngineStorage
+
+output.OutputWriter
+~~~~~~~~~~~~~~~~~~
+.. autoclass:: flask_track_usage.storage.output.OutputWriter
     :members:
     :inherited-members:
 
