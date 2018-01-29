@@ -29,16 +29,15 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 """
-Print "storage".
+Print writer.
 """
 
-from flask_track_usage.storage import Storage
+from flask_track_usage.storage import Writer
 
 
-class PrintStorage(Storage):
+class PrintWriter(Writer):
     """
-    Simply prints out the data it gets. Not really storage proper.
-    Helpful for testing.
+    Simply prints out the data it gets. Helpful for testing.
     """
 
     def store(self, data):
@@ -49,3 +48,7 @@ class PrintStorage(Storage):
            - `data`: Data to store.
         """
         print(data)
+
+
+# For backwards compatability
+PrintStorage = PrintWriter
