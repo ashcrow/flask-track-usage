@@ -116,7 +116,7 @@ class MongoStorage(_MongoStorage):
 
     def set_up(
             self, database, collection, host='127.0.0.1',
-            port=27017, username=None, password=None):
+            port=27017, username=None, password=None, auth_db=None, auth_mechanism=None):
         """
         Sets the collection.
 
@@ -127,10 +127,13 @@ class MongoStorage(_MongoStorage):
            - `port`: Port to connect to. Default: 27017
            - `username`: Optional username to authenticate with.
            - `password`: Optional password to authenticate with.
+           - `auth_db` : Optional database to authenticate against
+           - `auth_mechanism` : Optional authentication mechanism
         """
         import pymongo
         self.connection = pymongo.MongoClient(host, port)
         self.db = getattr(self.connection, database)
         if username and password:
-            self.db.authenticate(username, password)
+            auth_db = getattr(self.connection,auth_db) if auth_db else self.db
+            auth_db.authenticate(username, password, mechanism=auth_mechanism)
         self.collection = getattr(self.db, collection)
