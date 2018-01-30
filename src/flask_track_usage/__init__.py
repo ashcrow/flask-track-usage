@@ -154,7 +154,7 @@ class TrackUsage(object):
                 ctx.request.environ.get('SERVER_PROTOCOL')
             ),
             'url_args': dict(
-                [(k,ctx.request.args[k]) for k in ctx.request.args]
+                [(k, ctx.request.args[k]) for k in ctx.request.args]
             ),
             'username': None
         }
