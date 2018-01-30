@@ -3,11 +3,10 @@ python:
   - "2.7"
 services:
   - mongodb
-  - mongoengine
 before_script:
   - mysql -e 'create database track_usage_test;'
   - psql -c 'create database track_usage_test;' -U postgres
-  - pip install coverage pep8 pymongo==3.5.1 sqlalchemy psycopg2 mysql-python
+  - pip install coverage pep8 pymongo==3.5.1 sqlalchemy psycopg2 mysql-python mongoengine
 install:
   - pip install -e .
 script:
