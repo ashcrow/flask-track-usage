@@ -171,7 +171,10 @@ class MongoEngineStorage(_MongoStorage):
             version = db.StringField()
 
         class UsageTracker(db.Document):
-            date = db.DateTimeField(required=True, default=datetime.datetime.now)
+            date = db.DateTimeField(
+                required=True,
+                default=datetime.datetime.now
+            )
             website = db.StringField(required=True, default="default")
             blueprint = db.StringField(default=None)
             view_args = db.DictField()
@@ -214,7 +217,7 @@ class MongoEngineStorage(_MongoStorage):
         doc.content_length = data['content_length']
         doc.url_args = data['url_args']
         doc.username = data['username']
-        # the following is VERY MUCH A HACK to allow a passed-in 'doc' on set_up
+        # the following is VERY MUCH A HACK to allow a passed 'doc' on set_up
         ua = doc._fields['user_agent'].document_type_obj()
         ua.browser = data['user_agent'].browser
         if data['user_agent'].language:
@@ -224,15 +227,15 @@ class MongoEngineStorage(_MongoStorage):
             ua.version = str(data['user_agent'].version)
         doc.user_agent = ua
         if self.apache_log:
-            t = '{h} - {u} [{t}] "{r}" {s} {b} "{referer}" "{useragent}"'.format(
+            t = '{h} - {u} [{t}] "{r}" {s} {b} "{ref}" "{ua}"'.format(
                 h=data['remote_addr'],
                 u=data["username"] or '-',
                 t=doc.date.strftime("%d/%b/%Y:%H:%M:%S %z"),
                 r=data.get("request", '?'),
                 s=data['status'],
                 b=data['content_length'],
-                referer=data['url'],
-                useragent=str(data['user_agent'])
+                ref=data['url'],
+                ua=str(data['user_agent'])
             )
             doc.apache_combined_log = t
         doc.save()
@@ -263,4 +266,3 @@ class MongoEngineStorage(_MongoStorage):
             logs = self.collection.objects(**query)
         result = [log.to_mongo().to_dict() for log in logs]
         return result
-
