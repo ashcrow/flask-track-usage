@@ -189,7 +189,7 @@ class TestMongoEngineStorage(FlaskTrackUsageTestCase):
         self.storage.collection.drop_collection()
         self.track_usage = TrackUsage(self.app, self.storage)
 
-    def test_mongo_piggyback_storage(self):
+    def test_mongoengine_storage(self):
         """
         Test MongoEngineStorages stores the data the way we expect.
         """
