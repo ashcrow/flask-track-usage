@@ -2,3 +2,4 @@ flask
 pymongo
 sqlalchemy
 couchdb>=1.0
+mongoengine

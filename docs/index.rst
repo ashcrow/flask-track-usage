@@ -169,6 +169,11 @@ mongo.MongoStorage
     :members:
     :inherited-members:
 
+mongo.MongoEngineStorage
+~~~~~~~~~~~~~~~~~~
+.. autoclass:: flask_track_usage.storage.mongo.MongoEngineStorage
+    :members:
+    :inherited-members:
 
 redis_db.RedisStorage
 ~~~~~~~~~~~~~~~~~~~~~
