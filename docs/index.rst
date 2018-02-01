@@ -16,6 +16,12 @@ The following is optional:
 * Unique visitor tracking if you are wanting to use Flask's cookie storage.
 * Summation hooks for live count of common web analysis statistics such as hit counts.
 
+The following is optional:
+
+* `freegeoip.net <http://freegeoip.net/>`_ integration for storing geography of the visitor.
+* Unique visitor tracking if you are wanting to use Flask's cookie storage.
+* Summation hooks for live count of common web analysis statistics such as hit counts.
+
 
 .. _Flask: http://flask.pocoo.org/
 
@@ -66,9 +72,6 @@ Usage
     # Make an instance of the extension and put two writers
     t = TrackUsage(app, [PrintWriter(), OutputWriter(
         transform=lambda s: "OUTPUT: " + str(s))])
-
-    # Make an instance of the extension
-    t = TrackUsage(app, storage)
 
     # Include the view in the metrics
     @t.include
