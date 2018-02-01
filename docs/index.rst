@@ -10,11 +10,6 @@ Basic metrics tracking for your `Flask`_ application. The core of library is ver
 * Multiple storage options can be used.
 * Pluggable functionality for storage instances.
 * Supports Python 2.7 and 3+.
-The following is optional:
-
-* `freegeoip.net <http://freegeoip.net/>`_ integration for storing geography of the visitor.
-* Unique visitor tracking if you are wanting to use Flask's cookie storage.
-* Summation hooks for live count of common web analysis statistics such as hit counts.
 
 The following is optional:
 
@@ -70,8 +65,10 @@ Usage
     from flask_track_usage.storage.output import OutputWriter
 
     # Make an instance of the extension and put two writers
-    t = TrackUsage(app, [PrintWriter(), OutputWriter(
-        transform=lambda s: "OUTPUT: " + str(s))])
+    t = TrackUsage(app, [
+        PrintWriter(),
+        OutputWriter(transform=lambda s: "OUTPUT: " + str(s))
+    ])
 
     # Include the view in the metrics
     @t.include
@@ -95,7 +92,7 @@ Include
     app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
 
     # Make an instance of the extension
-    t = TrackUsage(app, [PrintStorage()])
+    t = TrackUsage(app, [PrintWriter()])
 
     from my_blueprints import a_bluprint
 
@@ -111,7 +108,7 @@ Exclude
     app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'exclude'
 
     # Make an instance of the extension
-    t = TrackUsage(app, [PrintStorage()])
+    t = TrackUsage(app, [PrintWriter()])
 
     from my_blueprints import a_bluprint
 
@@ -267,13 +264,13 @@ However, you can also add post-storage "hooks" that are called after the individ
         print "hello world!"
 
     # Make an instance of the extension
-    t = TrackUsage(app, [PrintStorage(hooks=[helloWorld])])
+    t = TrackUsage(app, [PrintWriter(hooks=[helloWorld])])
 
-In this example, the helloWorld function would be called once each time PrintStorage's store function is invoked. The keyword parameters are those found in the 'get_usage' function. (see above) Some Stores also add more keys.
+In this example, the helloWorld function would be called once each time PrintWriters output is invoked. The keyword parameters are those found in the `Retrieving Log Data`_ function. (see above) Some Storages/Writers also add more keys.
 
 This library has a list of standardized hooks that are used for log summarizing. They are documented in detail here:
 
-  standard summarization hooks
+  `Standard Summarization Hooks`_
 
 Not all Stores support all of these hooks. See the details for more information. Usage is fairly straightforward:
 
@@ -291,4 +288,7 @@ Not all Stores support all of these hooks. See the details for more information.
     #    sumServer: site-wide server hits/traffic
 
     t = TrackUsage(app, [MongoEngineStorage(hooks=[sumBasic])])
+
+
+.. _`Standard Summarization Hooks`: hooks
 
