@@ -53,7 +53,11 @@ except pymongo.errors.ConnectionFailure:
 try:
     import mongoengine
     HAS_MONGOENGINE = True
-    mongoengine.connect(db="mongoenginetest")
+    try:
+        mongoengine.connect(db="mongoenginetest")
+    except:
+        print('Can not connect to mongoengine database.')
+        HAS_MONGOENGINE = False
 except ImportError:
     pass
 
