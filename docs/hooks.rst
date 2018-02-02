@@ -1,8 +1,7 @@
 Flask-Track-Usage Hooks
 =======================
 
-The library supports post-storage functions that can do extra functions after the 
-
+The library supports post-storage functions that can optionally do more after the request itself is stored.
 
 How To Use
 ----------
@@ -27,11 +26,16 @@ Time Periods for ALL Summary Hooks
 
 When keeping live metrics for each of the summaries, the following time periods are used:
 
-Hour: one common unit of "storage" is kept to keep track of the hourly traffic for each hour of a particular date.
+:Hour:
+  one common unit of "storage" is kept to keep track of the hourly traffic for each hour of a particular date.
 
-Date: one common unit of "storage" is kept to keep track of the daily traffic for a particular date.
+:Date:
+  one common unit of "storage" is kept to keep track of the daily traffic for a particular date.
 
-Month: one common unit of "storage" is kept to keep track of the monthly traffic for a particular month. The month stored is the first day of the month. For example, the summary for March 2017 would be stored under the date of 2017-03-01.
+:Month:
+  one common unit of "storage" is kept to keep track of the monthly traffic for a particular
+  month. The month stored is the first day of the month. For example, the summary for March
+  2017 would be stored under the date of 2017-03-01.
 
 Please note that this library DOES NOT handle expiration of old data. If you wish to delete, say, hourly data that is over 60 days old, you will need to create a seperate process to handle this. This library merely adds or updates new data and presumes limitless storage.
 
@@ -40,8 +44,10 @@ Summary Targets for ALL Summary Hooks
 
 Currently, the following two data targets are summarized for each of the Time Periods.
 
-1. Hits: the total number of requests seen.
-2. Transfer: the total number of bytes transfered in response to all requests seen.
+:Hits:
+  The total number of requests seen.
+:Transfer:
+  The total number of bytes transfered in response to all requests seen.
 
 sumUrls -- URLs
 ~~~~~~~~~~~~~~~
@@ -100,4 +106,4 @@ To add to the hooks to the Flask-Track-Usage library, add the "stub" code file s
 
 Each "stub" has the sole purpose of looking for the corresponding method in the in it's calling class. So, if you write a summary function called "sumMyNewThing" it will look for a "sumMyNewThing" method in the Storage class it is associated with.
 
-Not every storage class supports every summary function, so it is critical that each storage class fail gracefully and simply skips any methods not found.
+Not every storage class supports every summary function, so it is critical that each storage class fail gracefully and simply skip any methods not found.
