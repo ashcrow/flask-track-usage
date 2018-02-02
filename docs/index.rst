@@ -270,7 +270,8 @@ In this example, the helloWorld function would be called once each time PrintWri
 
 This library has a list of standardized hooks that are used for log summarizing. They are documented in detail here:
 
-  `Standard Summarization Hooks`_
+:doc:`hooks`
+  Standard Summarization Hooks
 
 Not all Stores support all of these hooks. See the details for more information. Usage is fairly straightforward:
 
@@ -280,15 +281,5 @@ Not all Stores support all of these hooks. See the details for more information.
     from flask.ext.track_usage.storage.mongo import MongoEngineStorage
     from flask.ext.track_usage.summarization import sumBasic
 
-    # sumBasic keeps summaries on the basic 5 metrics:
-    #    sumUrls: URLs
-    #    sumRemotes: remote IPs
-    #    sumUserAgents: user agents
-    #    sumLanugages: languages
-    #    sumServer: site-wide server hits/traffic
-
     t = TrackUsage(app, [MongoEngineStorage(hooks=[sumBasic])])
-
-
-.. _`Standard Summarization Hooks`: hooks
 
