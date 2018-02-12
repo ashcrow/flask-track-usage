@@ -47,6 +47,11 @@ class _BaseWritable(object):
            - `args`: All non-keyword arguments.
            - `kwargs`: All keyword arguments.
         """
+        if "hooks" in kwargs:
+            self._post_storage_hooks = kwargs["hooks"]
+            del kwargs["hooks"]
+        else:
+            self._post_storage_hooks = []
         self.set_up(*args, **kwargs)
 
     def set_up(self, *args, **kwargs):
@@ -65,6 +70,10 @@ class _BaseWritable(object):
 
         :Parameters:
            - `data`: Data to store.
+        :Returns:
+           A dictionary representing, at minimum, the original 'data'. But
+           can also include information that will be of use to any hooks
+           associated with that storage class.
         """
         raise NotImplementedError('store must be implemented.')
 
@@ -75,7 +84,12 @@ class _BaseWritable(object):
         :Parameters:
            - `data`: Data to store.
         """
-        return self.store(data)
+        result = self.store(data)
+        data["_parent_class_name"] = self.__class__.__name__
+        for hook in self._post_storage_hooks:
+            hook(**result)
+        return result
+        # return self.store(data)
 
 
 class Writer(_BaseWritable):

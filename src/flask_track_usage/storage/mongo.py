@@ -169,6 +169,7 @@ class MongoEngineStorage(_MongoStorage):
             language = db.StringField()
             platform = db.StringField()
             version = db.StringField()
+            string = db.StringField()
 
         class UsageTracker(db.Document):
             date = db.DateTimeField(
@@ -225,6 +226,7 @@ class MongoEngineStorage(_MongoStorage):
         ua.platform = data['user_agent'].platform
         if data['user_agent'].version:
             ua.version = str(data['user_agent'].version)
+        ua.string = data['user_agent'].string
         doc.user_agent = ua
         if self.apache_log:
             t = '{h} - {u} [{t}] "{r}" {s} {b} "{ref}" "{ua}"'.format(
@@ -239,7 +241,8 @@ class MongoEngineStorage(_MongoStorage):
             )
             doc.apache_combined_log = t
         doc.save()
-        return doc
+        data['mongoengine_document'] = doc
+        return data
 
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """
@@ -261,8 +264,8 @@ class MongoEngineStorage(_MongoStorage):
         if limit:
             first = limit * (page - 1)
             last = limit * page
-            logs = self.collection.objects(**query)[first:last]
+            logs = self.collection.objects(**query).order_by('-date')[first:last]
         else:
-            logs = self.collection.objects(**query)
+            logs = self.collection.objects(**query).order_by('-date')
         result = [log.to_mongo().to_dict() for log in logs]
         return result

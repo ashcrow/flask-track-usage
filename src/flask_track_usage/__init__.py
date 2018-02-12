@@ -56,7 +56,7 @@ class TrackUsage(object):
 
         :Parameters:
            - `app`: Optional app to use.
-           - `storage`: If app is set you must pass the storage callables now.
+           - `storage`: If app is set, required list of storage callables.
         """
         self._exclude_views = set()
         self._include_views = set()
