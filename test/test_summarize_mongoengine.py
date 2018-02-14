@@ -67,13 +67,22 @@ if HAS_MONGOENGINE:
         UsageTrackerSumRemoteHourly,
         UsageTrackerSumRemoteDaily,
         UsageTrackerSumRemoteMonthly,
+        UsageTrackerSumUserAgentHourly,
+        UsageTrackerSumUserAgentDaily,
+        UsageTrackerSumUserAgentMonthly,
+        UsageTrackerSumLanguageHourly,
+        UsageTrackerSumLanguageDaily,
+        UsageTrackerSumLanguageMonthly,
+        UsageTrackerSumServerHourly,
+        UsageTrackerSumServerDaily,
+        UsageTrackerSumServerMonthly,
     )
 
 from . import FlaskTrackUsageTestCase
 
 
 @unittest.skipUnless(HAS_MONGOENGINE, "Requires MongoEngine")
-class TestMongoEngineSummarize(FlaskTrackUsageTestCase):
+class TestMongoEngineSummarizeBasic(FlaskTrackUsageTestCase):
     """
     Tests MongoEngine summaries.
     """
@@ -86,6 +95,9 @@ class TestMongoEngineSummarize(FlaskTrackUsageTestCase):
         self.storage = MongoEngineStorage(hooks=[
             sumUrl,
             sumRemote,
+            sumUserAgent,
+            sumLanguage,
+            sumServer
         ])
         self.track_usage = TrackUsage(self.app, self.storage)
         # Clean out the summary
@@ -95,6 +107,15 @@ class TestMongoEngineSummarize(FlaskTrackUsageTestCase):
         UsageTrackerSumRemoteHourly.drop_collection()
         UsageTrackerSumRemoteDaily.drop_collection()
         UsageTrackerSumRemoteMonthly.drop_collection()
+        UsageTrackerSumUserAgentHourly.drop_collection()
+        UsageTrackerSumUserAgentDaily.drop_collection()
+        UsageTrackerSumUserAgentMonthly.drop_collection()
+        UsageTrackerSumLanguageHourly.drop_collection()
+        UsageTrackerSumLanguageDaily.drop_collection()
+        UsageTrackerSumLanguageMonthly.drop_collection()
+        UsageTrackerSumServerHourly.drop_collection()
+        UsageTrackerSumServerDaily.drop_collection()
+        UsageTrackerSumServerMonthly.drop_collection()
         # trigger one timed summary
         self.now = datetime.datetime.utcnow()
         self.hour = self.now.replace(minute=0, second=0, microsecond=0)
@@ -127,7 +148,6 @@ class TestMongoEngineSummarize(FlaskTrackUsageTestCase):
         Test MongoEngine remote IP summarization.
         """
         hour_doc = UsageTrackerSumRemoteHourly.objects.first()
-        print(hour_doc.remote_addr)
         assert hour_doc.remote_addr == '127.0.0.1'
         assert hour_doc.date == self.hour
         assert hour_doc.hits == 1
@@ -139,6 +159,63 @@ class TestMongoEngineSummarize(FlaskTrackUsageTestCase):
         assert day_doc.transfer > 1
         month_doc = UsageTrackerSumRemoteMonthly.objects.first()
         assert month_doc.remote_addr == '127.0.0.1'
+        assert month_doc.date == self.month
+        assert month_doc.hits == 1
+        assert month_doc.transfer > 1
+
+    def test_mongoengine_user_agent_summary(self):
+        """
+        Test MongoEngine User Agent summarization.
+        """
+        hour_doc = UsageTrackerSumUserAgentHourly.objects.first()
+        assert hour_doc.user_agent_string.startswith("werkzeug/")
+        assert hour_doc.date == self.hour
+        assert hour_doc.hits == 1
+        assert hour_doc.transfer > 1
+        day_doc = UsageTrackerSumUserAgentDaily.objects.first()
+        assert day_doc.user_agent_string.startswith("werkzeug/")
+        assert day_doc.date == self.day
+        assert day_doc.hits == 1
+        assert day_doc.transfer > 1
+        month_doc = UsageTrackerSumUserAgentMonthly.objects.first()
+        assert month_doc.user_agent_string.startswith("werkzeug/")
+        assert month_doc.date == self.month
+        assert month_doc.hits == 1
+        assert month_doc.transfer > 1
+
+    def test_mongoengine_language_summary(self):
+        """
+        Test MongoEngine Language summarization.
+        """
+        hour_doc = UsageTrackerSumLanguageHourly.objects.first()
+        assert hour_doc.language == 'none'
+        assert hour_doc.date == self.hour
+        assert hour_doc.hits == 1
+        assert hour_doc.transfer > 1
+        day_doc = UsageTrackerSumLanguageDaily.objects.first()
+        assert day_doc.language == 'none'
+        assert day_doc.date == self.day
+        assert day_doc.hits == 1
+        assert day_doc.transfer > 1
+        month_doc = UsageTrackerSumLanguageMonthly.objects.first()
+        assert month_doc.language == 'none'
+        assert month_doc.date == self.month
+        assert month_doc.hits == 1
+        assert month_doc.transfer > 1
+
+    def test_mongoengine_server_summary(self):
+        """
+        Test MongoEngine server summarization.
+        """
+        hour_doc = UsageTrackerSumServerHourly.objects.first()
+        assert hour_doc.date == self.hour
+        assert hour_doc.hits == 1
+        assert hour_doc.transfer > 1
+        day_doc = UsageTrackerSumServerDaily.objects.first()
+        assert day_doc.date == self.day
+        assert day_doc.hits == 1
+        assert day_doc.transfer > 1
+        month_doc = UsageTrackerSumServerMonthly.objects.first()
         assert month_doc.date == self.month
         assert month_doc.hits == 1
         assert month_doc.transfer > 1
