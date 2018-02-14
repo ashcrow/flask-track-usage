@@ -264,7 +264,8 @@ class MongoEngineStorage(_MongoStorage):
         if limit:
             first = limit * (page - 1)
             last = limit * page
-            logs = self.collection.objects(**query).order_by('-date')[first:last]
+            logs = self.collection.objects(**query)\
+                .order_by('-date')[first:last]
         else:
             logs = self.collection.objects(**query).order_by('-date')
         result = [log.to_mongo().to_dict() for log in logs]

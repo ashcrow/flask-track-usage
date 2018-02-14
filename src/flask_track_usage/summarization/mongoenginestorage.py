@@ -64,7 +64,6 @@ else:
             'collection': "usageTracking_sumUrl_hourly"
         }
 
-
     class UsageTrackerSumUrlDaily(db.Document):
         url = db.StringField()
         date = db.DateTimeField(required=True)
@@ -73,7 +72,6 @@ else:
         meta = {
             'collection': "usageTracking_sumUrl_daily"
         }
-
 
     class UsageTrackerSumUrlMonthly(db.Document):
         url = db.StringField()
@@ -89,7 +87,6 @@ else:
         "day": UsageTrackerSumUrlDaily,
         "month": UsageTrackerSumUrlMonthly,
     }
-
 
     def sumUrl(**kwargs):
         if not _check_environment(**kwargs):
@@ -122,7 +119,6 @@ else:
             'collection': "usageTracking_sumRemote_hourly"
         }
 
-
     class UsageTrackerSumRemoteDaily(db.Document):
         remote_addr = db.StringField()
         date = db.DateTimeField(required=True)
@@ -131,7 +127,6 @@ else:
         meta = {
             'collection': "usageTracking_sumRemote_daily"
         }
-
 
     class UsageTrackerSumRemoteMonthly(db.Document):
         remote_addr = db.StringField()
@@ -147,7 +142,6 @@ else:
         "day": UsageTrackerSumRemoteDaily,
         "month": UsageTrackerSumRemoteMonthly,
     }
-
 
     def sumRemote(**kwargs):
         if not _check_environment(**kwargs):
@@ -180,7 +174,6 @@ else:
             'collection': "usageTracking_sumUserAgent_hourly"
         }
 
-
     class UsageTrackerSumUserAgentDaily(db.Document):
         user_agent_string = db.StringField()
         date = db.DateTimeField(required=True)
@@ -189,7 +182,6 @@ else:
         meta = {
             'collection': "usageTracking_sumUserAgent_daily"
         }
-
 
     class UsageTrackerSumUserAgentMonthly(db.Document):
         user_agent_string = db.StringField()
@@ -206,13 +198,17 @@ else:
         "month": UsageTrackerSumUserAgentMonthly,
     }
 
-
     def sumUserAgent(**kwargs):
         if not _check_environment(**kwargs):
             return
         src = kwargs['mongoengine_document']
         #
-        increment(sumUserAgentClasses, src, "user_agent_string", ["user_agent", "string"])
+        increment(
+            sumUserAgentClasses,
+            src,
+            "user_agent_string",
+            ["user_agent", "string"]
+        )
         return
 
 ######################################################
@@ -237,7 +233,6 @@ else:
             'collection': "usageTracking_sumLanguage_hourly"
         }
 
-
     class UsageTrackerSumLanguageDaily(db.Document):
         language = db.StringField(null=True)
         date = db.DateTimeField(required=True)
@@ -246,7 +241,6 @@ else:
         meta = {
             'collection': "usageTracking_sumLanguage_daily"
         }
-
 
     class UsageTrackerSumLanguageMonthly(db.Document):
         language = db.StringField(null=True)
@@ -263,7 +257,6 @@ else:
         "month": UsageTrackerSumLanguageMonthly,
     }
 
-
     def sumLanguage(**kwargs):
         if not _check_environment(**kwargs):
             return
@@ -271,7 +264,12 @@ else:
         #
         if not src.user_agent.language:
             src.user_agent.language = "none"
-        increment(sumLanguageClasses, src, "language", ["user_agent", "language"])
+        increment(
+            sumLanguageClasses,
+            src,
+            "language",
+            ["user_agent", "language"]
+        )
         return
 
 
@@ -296,7 +294,6 @@ else:
             'collection': "usageTracking_sumServer_hourly"
         }
 
-
     class UsageTrackerSumServerDaily(db.Document):
         date = db.DateTimeField(required=True)
         hits = db.IntField(requried=True, default=0)
@@ -304,7 +301,6 @@ else:
         meta = {
             'collection': "usageTracking_sumServer_daily"
         }
-
 
     class UsageTrackerSumServerMonthly(db.Document):
         date = db.DateTimeField(required=True)
@@ -319,7 +315,6 @@ else:
         "day": UsageTrackerSumServerDaily,
         "month": UsageTrackerSumServerMonthly,
     }
-
 
     def sumServer(**kwargs):
         if not _check_environment(**kwargs):

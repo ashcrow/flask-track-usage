@@ -1,4 +1,5 @@
 import mongoenginestorage
+
 """
 Summarization routines.
 
@@ -7,11 +8,12 @@ that search for the correct storage support based on the class information
 passed.
 """
 
+
 def _caller(method_name, **kwargs):
     if "_parent_class_name" not in kwargs:
         raise NotImplementedError(
             "{} can only be used as a Storage class hook.".format(method_name)
-        )    
+        )
     try:
         lib_name = kwargs["_parent_class_name"].lower()
         library = globals()[lib_name]
@@ -25,8 +27,9 @@ def _caller(method_name, **kwargs):
     except AttributeError:
         raise NotImplementedError(
             '{} not implemented for this Storage class.'.format(method_name)
-        )        
+        )
     method(**kwargs)
+
 
 def sumUrl(**kwargs):
     """
@@ -71,7 +74,7 @@ def sumVisitor(**kwargs):
     Traffic is summarized for each unique visitor of the Flask server. For this
     to function, the optional TRACK_USAGE_COOKIE function must be enabled in
     config.
-    
+
     This metric is limited by the cookie technology. User behavior such as
     switching browsers or turning on "anonymous mode" on a browser will make
     them appear to be multiple users.
