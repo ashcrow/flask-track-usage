@@ -15,9 +15,9 @@ def _check_environment(**kwargs):
 
 
 def trim_times(date):
-    hour = date.replace(minute=0, second=0)
-    day = date.replace(hour=0, minute=0, second=0)
-    month = date.replace(day=1, hour=0, minute=0, second=0)
+    hour = date.replace(minute=0, second=0, microsecond=0)
+    day = date.replace(hour=0, minute=0, second=0, microsecond=0)
+    month = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     return hour, day, month
 
 

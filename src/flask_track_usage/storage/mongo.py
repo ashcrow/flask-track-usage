@@ -174,7 +174,7 @@ class MongoEngineStorage(_MongoStorage):
         class UsageTracker(db.Document):
             date = db.DateTimeField(
                 required=True,
-                default=datetime.datetime.now
+                default=datetime.datetime.utcnow
             )
             website = db.StringField(required=True, default="default")
             blueprint = db.StringField(default=None)
