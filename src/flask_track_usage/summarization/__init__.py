@@ -98,5 +98,5 @@ def sumBasic(**kwargs):
     sumUrl(**kwargs)
     sumRemote(**kwargs)
     sumUserAgent(**kwargs)
-    #sumLanguage(**kwargs)
-    #sumServer(**kwargs)
+    sumLanguage(**kwargs)
+    sumServer(**kwargs)

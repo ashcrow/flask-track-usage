@@ -24,16 +24,19 @@ def trim_times(date):
 def increment(class_dict, src, dest, target_list):
     times = {}
     times["hour"], times["day"], times["month"] = trim_times(src.date)
-    value = src
-    for key in target_list:
-        value = value[key]
-    kwargs = {dest: value}
+    db_args = {}
+    if dest:
+        value = src
+        for key in target_list:
+            value = value[key]
+        db_args[dest] = value
     for period in ["hour", "day", "month"]:
-        doc = class_dict[period].objects(date=times[period], **kwargs).first()
+        doc = class_dict[period].objects(date=times[period], **db_args).first()
         if not doc:
             doc = class_dict[period]()
             doc.date = times[period]
-            doc[dest] = value
+            if dest:
+                doc[dest] = value
         doc.hits += 1
         doc.transfer += src.content_length
         doc.save()
@@ -45,7 +48,12 @@ def increment(class_dict, src, dest, target_list):
 #
 ######################################################
 
-if not MONGOENGINE_MISSING:
+if MONGOENGINE_MISSING:
+
+    def sumUrl(**kwargs):
+        raise NotImplementedError("MongoEngine library not installed")
+
+else:
 
     class UsageTrackerSumUrlHourly(db.Document):
         url = db.StringField()
@@ -83,13 +91,13 @@ if not MONGOENGINE_MISSING:
     }
 
 
-def sumUrl(**kwargs):
-    if not _check_environment(**kwargs):
+    def sumUrl(**kwargs):
+        if not _check_environment(**kwargs):
+            return
+        src = kwargs['mongoengine_document']
+        #
+        increment(sumUrlClasses, src, "url", ["url"])
         return
-    src = kwargs['mongoengine_document']
-    #
-    increment(sumUrlClasses, src, "url", ["url"])
-    return
 
 
 ######################################################
@@ -98,7 +106,12 @@ def sumUrl(**kwargs):
 #
 ######################################################
 
-if not MONGOENGINE_MISSING:
+if MONGOENGINE_MISSING:
+
+    def sumRemote(**kwargs):
+        raise NotImplementedError("MongoEngine library not installed")
+
+else:
 
     class UsageTrackerSumRemoteHourly(db.Document):
         remote_addr = db.StringField()
@@ -136,13 +149,13 @@ if not MONGOENGINE_MISSING:
     }
 
 
-def sumRemote(**kwargs):
-    if not _check_environment(**kwargs):
+    def sumRemote(**kwargs):
+        if not _check_environment(**kwargs):
+            return
+        src = kwargs['mongoengine_document']
+        #
+        increment(sumRemoteClasses, src, "remote_addr", ["remote_addr"])
         return
-    src = kwargs['mongoengine_document']
-    #
-    increment(sumRemoteClasses, src, "remote_addr", ["remote_addr"])
-    return
 
 
 ######################################################
@@ -151,7 +164,12 @@ def sumRemote(**kwargs):
 #
 ######################################################
 
-if not MONGOENGINE_MISSING:
+if MONGOENGINE_MISSING:
+
+    def sumUserAgent(**kwargs):
+        raise NotImplementedError("MongoEngine library not installed")
+
+else:
 
     class UsageTrackerSumUserAgentHourly(db.Document):
         user_agent_string = db.StringField()
@@ -189,28 +207,124 @@ if not MONGOENGINE_MISSING:
     }
 
 
-def sumUserAgent(**kwargs):
-    if not _check_environment(**kwargs):
+    def sumUserAgent(**kwargs):
+        if not _check_environment(**kwargs):
+            return
+        src = kwargs['mongoengine_document']
+        #
+        increment(sumUserAgentClasses, src, "user_agent_string", ["user_agent", "string"])
         return
-    src = kwargs['mongoengine_document']
-    #
-    increment(sumUserAgentClasses, src, "user_agent_string", ["user_agent", "string"])
-    return
+
+######################################################
+#
+#   sumLanguage
+#
+######################################################
+
+if MONGOENGINE_MISSING:
+
+    def sumLanguage(**kwargs):
+        raise NotImplementedError("MongoEngine library not installed")
+
+else:
+
+    class UsageTrackerSumLanguageHourly(db.Document):
+        language = db.StringField(null=True)
+        date = db.DateTimeField(required=True)
+        hits = db.IntField(requried=True, default=0)
+        transfer = db.IntField(required=True, default=0)
+        meta = {
+            'collection': "usageTracking_sumLanguage_hourly"
+        }
 
 
-# def sumLanguage(**kwargs):
-#     if not _check_environment(**kwargs):
-#         return
-#     src = kwargs['mongoengine_document']
-#     #
-#     increment(sumUrlClasses, src, ["user_agent", "language"])
-#     return
+    class UsageTrackerSumLanguageDaily(db.Document):
+        language = db.StringField(null=True)
+        date = db.DateTimeField(required=True)
+        hits = db.IntField(requried=True, default=0)
+        transfer = db.IntField(required=True, default=0)
+        meta = {
+            'collection': "usageTracking_sumLanguage_daily"
+        }
 
 
-# def sumServer(**kwargs):
-#     if not _check_environment(**kwargs):
-#         return
-#     src = kwargs['mongoengine_document']
-#     #
-#     increment(sumUrlClasses, src, None)
-#     return
+    class UsageTrackerSumLanguageMonthly(db.Document):
+        language = db.StringField(null=True)
+        date = db.DateTimeField(required=True)
+        hits = db.IntField(requried=True, default=0)
+        transfer = db.IntField(required=True, default=0)
+        meta = {
+            'collection': "usageTracking_sumLanguage_monthly"
+        }
+
+    sumLanguageClasses = {
+        "hour": UsageTrackerSumLanguageHourly,
+        "day": UsageTrackerSumLanguageDaily,
+        "month": UsageTrackerSumLanguageMonthly,
+    }
+
+
+    def sumLanguage(**kwargs):
+        if not _check_environment(**kwargs):
+            return
+        src = kwargs['mongoengine_document']
+        #
+        if not src.user_agent.language:
+            src.user_agent.language = "none"
+        increment(sumLanguageClasses, src, "language", ["user_agent", "language"])
+        return
+
+
+######################################################
+#
+#   sumServer
+#
+######################################################
+
+if MONGOENGINE_MISSING:
+
+    def sumServer(**kwargs):
+        raise NotImplementedError("MongoEngine library not installed")
+
+else:
+
+    class UsageTrackerSumServerHourly(db.Document):
+        date = db.DateTimeField(required=True)
+        hits = db.IntField(requried=True, default=0)
+        transfer = db.IntField(required=True, default=0)
+        meta = {
+            'collection': "usageTracking_sumServer_hourly"
+        }
+
+
+    class UsageTrackerSumServerDaily(db.Document):
+        date = db.DateTimeField(required=True)
+        hits = db.IntField(requried=True, default=0)
+        transfer = db.IntField(required=True, default=0)
+        meta = {
+            'collection': "usageTracking_sumServer_daily"
+        }
+
+
+    class UsageTrackerSumServerMonthly(db.Document):
+        date = db.DateTimeField(required=True)
+        hits = db.IntField(requried=True, default=0)
+        transfer = db.IntField(required=True, default=0)
+        meta = {
+            'collection': "usageTracking_sumServer_monthly"
+        }
+
+    sumServerClasses = {
+        "hour": UsageTrackerSumServerHourly,
+        "day": UsageTrackerSumServerDaily,
+        "month": UsageTrackerSumServerMonthly,
+    }
+
+
+    def sumServer(**kwargs):
+        if not _check_environment(**kwargs):
+            return
+        src = kwargs['mongoengine_document']
+        #
+        increment(sumServerClasses, src, None, [])
+        return
