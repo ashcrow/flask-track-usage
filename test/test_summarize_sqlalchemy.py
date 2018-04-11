@@ -49,6 +49,25 @@ except ImportError:
     HAS_POSTGRES = False
 
 
+@unittest.skipUnless(HAS_SQLALCHEMY, "Requires SQLAlchemy")
+@unittest.skipUnless(HAS_POSTGRES, "Requires psycopg2 Postgres package")
+class TestPostgreStorage(FlaskTrackUsageTestCase):
+
+    def _create_storage(self):
+        engine = sql.create_engine(
+                "postgresql+psycopg2://postgres:@localhost/track_usage_test")
+        metadata = sql.MetaData(bind=engine)
+        self.storage = SQLStorage(
+            engine=engine,
+            metadata=metadata,
+            table_name=self.given_table_name
+        )
+        metadata.create_all()
+
+
+
+
+
 
 # from flask_track_usage import TrackUsage
 # # from flask_track_usage.storage.mongo import MongoEngineStorage
