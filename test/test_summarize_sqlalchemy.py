@@ -49,6 +49,14 @@ except ImportError:
     HAS_POSTGRES = False
 
 
+import datetime
+import unittest
+from flask import Blueprint
+from test import FlaskTrackUsageTestCase
+from flask_track_usage import TrackUsage
+from flask_track_usage.storage.sql import SQLStorage
+
+
 @unittest.skipUnless(HAS_SQLALCHEMY, "Requires SQLAlchemy")
 @unittest.skipUnless(HAS_POSTGRES, "Requires psycopg2 Postgres package")
 class TestPostgreStorage(FlaskTrackUsageTestCase):
@@ -64,8 +72,56 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
         )
         metadata.create_all()
 
+    def setUp(self):
+        self.given_table_name = 'my_usage'
+        FlaskTrackUsageTestCase.setUp(self)
+        self.blueprint = Blueprint('blueprint', __name__)
 
+        @self.blueprint.route('/blueprint')
+        def blueprint():
+            return "blueprint"
+        self.app.register_blueprint(self.blueprint)
 
+        self._create_storage()
+
+        self.track_usage = TrackUsage(self.app, self.storage)
+        self.track_usage.include_blueprint(self.blueprint)
+
+    def tearDown(self):
+        meta = sql.MetaData()
+        meta.reflect(bind=self.storage._eng)
+        for table in reversed(meta.sorted_tables):
+            self.storage._eng.execute(table.delete())
+
+    def test_table_names(self):
+        meta = sql.MetaData()
+        meta.reflect(bind=self.storage._eng)
+        print(meta.tables.keys())
+        self.assertIn('my_usage_language_hourly', meta.tables.keys())
+        self.assertIn('my_usage_remote_monthly', meta.tables.keys())
+        self.assertIn('my_usage_language_monthly', meta.tables.keys())
+        self.assertIn('my_usage_url_monthly', meta.tables.keys())
+        self.assertIn('my_usage_useragent_hourly', meta.tables.keys())
+        self.assertIn('my_usage_server_hourly', meta.tables.keys())
+        self.assertIn('my_usage_remote_hourly', meta.tables.keys())
+        self.assertIn('my_usage_remote_daily', meta.tables.keys())
+        self.assertIn('my_usage_language_daily', meta.tables.keys())
+        self.assertIn('my_usage_url_hourly', meta.tables.keys())
+        self.assertIn('my_usage_useragent_monthly', meta.tables.keys())
+        self.assertIn('my_usage_useragent_daily', meta.tables.keys())
+        self.assertIn('my_usage_url_daily', meta.tables.keys())
+        self.assertIn('my_usage_server_daily', meta.tables.keys())
+        self.assertIn('my_usage_server_monthly', meta.tables.keys())
+
+    def test_url_summary(self):
+        # TODO: modify .get so that I can impose a specific time?
+        self.client.get('/')
+        con = self.storage._eng.connect()
+
+        s = sql.select([self.storage.sum_tables["url_hourly"]])
+        result = con.execute(s).fetchone()
+        print(result)
+        self.assertTrue(False)
 
 
 
