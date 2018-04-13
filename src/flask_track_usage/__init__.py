@@ -152,6 +152,7 @@ class TrackUsage(object):
         data = {
             'url': ctx.request.url,
             'user_agent': ctx.request.user_agent,
+            'server_name': ctx.app.name,
             'blueprint': ctx.request.blueprint,
             'view_args': ctx.request.view_args,
             'status': response.status_code,

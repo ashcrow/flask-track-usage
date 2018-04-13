@@ -177,6 +177,7 @@ class MongoEngineStorage(_MongoStorage):
                 default=datetime.datetime.utcnow
             )
             website = db.StringField(required=True, default="default")
+            server_name = db.StringField(default="self")
             blueprint = db.StringField(default=None)
             view_args = db.DictField()
             ip_info = db.StringField()
@@ -205,6 +206,7 @@ class MongoEngineStorage(_MongoStorage):
         doc = self.collection()
         doc.date = datetime.datetime.fromtimestamp(data['date'])
         doc.website = self.website
+        doc.server_name = data['server_name']
         doc.blueprint = data['blueprint']
         doc.view_args = data['view_args']
         doc.ip_info = data['ip_info']

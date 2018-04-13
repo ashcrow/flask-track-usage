@@ -208,14 +208,17 @@ class TestMongoEngineSummarizeBasic(FlaskTrackUsageTestCase):
         Test MongoEngine server summarization.
         """
         hour_doc = UsageTrackerSumServerHourly.objects.first()
+        assert hour_doc.server_name == self.app.name
         assert hour_doc.date == self.hour
         assert hour_doc.hits == 1
         assert hour_doc.transfer > 1
         day_doc = UsageTrackerSumServerDaily.objects.first()
+        assert day_doc.server_name == self.app.name
         assert day_doc.date == self.day
         assert day_doc.hits == 1
         assert day_doc.transfer > 1
         month_doc = UsageTrackerSumServerMonthly.objects.first()
+        assert month_doc.server_name == self.app.name
         assert month_doc.date == self.month
         assert month_doc.hits == 1
         assert month_doc.transfer > 1

@@ -268,20 +268,20 @@ else:
                 x.sum_tables["server_hourly"],
                 hour,
                 kwargs,
-                server="self"
+                server=kwargs["server_name"]
             )
             increment(con,
                 x.sum_tables["server_daily"],
                 day,
                 kwargs,
-                server="self"
+                server=kwargs["server_name"]
             )
             increment(
                 con,
                 x.sum_tables["server_monthly"],
                 month,
                 kwargs,
-                server="self"
+                server=kwargs["server_name"]
             )
 
         return

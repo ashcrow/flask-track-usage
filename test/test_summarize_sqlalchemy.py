@@ -257,7 +257,7 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_hour
-        assert result[1] == u'http://localhost/'
+        assert result[1] is None  # the werkzeug test client does not have a language
         assert result[2] == 3
         assert result[3] == 18
 
@@ -268,7 +268,7 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_day
-        assert result[1] == u'http://localhost/'
+        assert result[1] is None
         assert result[2] == 3
         assert result[3] == 18
 
@@ -280,7 +280,7 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_month
-        assert result[1] == u'http://localhost/'
+        assert result[1] is None
         assert result[2] == 3
         assert result[3] == 18
 
@@ -293,6 +293,7 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_hour
+        assert result[1] == self.app.name
         assert result[2] == 3
         assert result[3] == 18
 
@@ -304,6 +305,7 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_day
+        assert result[1] == self.app.name
         assert result[2] == 3
         assert result[3] == 18
 
@@ -314,5 +316,6 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_month
+        assert result[1] == self.app.name
         assert result[2] == 3
         assert result[3] == 18

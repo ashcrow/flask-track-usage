@@ -287,6 +287,7 @@ if MONGOENGINE_MISSING:
 else:
 
     class UsageTrackerSumServerHourly(db.Document):
+        server_name = db.StringField(default="self")
         date = db.DateTimeField(required=True)
         hits = db.IntField(requried=True, default=0)
         transfer = db.IntField(required=True, default=0)
@@ -295,6 +296,7 @@ else:
         }
 
     class UsageTrackerSumServerDaily(db.Document):
+        server_name = db.StringField(default="self")
         date = db.DateTimeField(required=True)
         hits = db.IntField(requried=True, default=0)
         transfer = db.IntField(required=True, default=0)
@@ -303,6 +305,7 @@ else:
         }
 
     class UsageTrackerSumServerMonthly(db.Document):
+        server_name = db.StringField(default="self")
         date = db.DateTimeField(required=True)
         hits = db.IntField(requried=True, default=0)
         transfer = db.IntField(required=True, default=0)
@@ -321,5 +324,5 @@ else:
             return
         src = kwargs['mongoengine_document']
         #
-        increment(sumServerClasses, src, None, [])
+        increment(sumServerClasses, src, "server_name", ["server_name"])
         return
