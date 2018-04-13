@@ -86,6 +86,7 @@ class _BaseWritable(object):
         """
         result = self.store(data)
         data["_parent_class_name"] = self.__class__.__name__
+        data['_parent_self'] = self
         for hook in self._post_storage_hooks:
             hook(**result)
         return result

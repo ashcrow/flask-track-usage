@@ -5,39 +5,49 @@ try:
 except ImportError:
     HAS_SQLALCHEMY = False
 
+try:
+    import psycopg2
+    from sqlalchemy.dialects.postgresql import insert
+    HAS_POSTGRES = True
+except ImportError:
+    HAS_POSTGRES = False
 
 def _check_environment(**kwargs):
     if not HAS_SQLALCHEMY:
         return False
     return True
 
+def _check_postgresql(**kwargs):
+    if not HAS_POSTGRES:
+        return False
+    if kwargs["_parent_self"]._eng.driver != 'psycopg2':
+        return False
+    return True
 
-# def trim_times(date):
-#     hour = date.replace(minute=0, second=0, microsecond=0)
-#     day = date.replace(hour=0, minute=0, second=0, microsecond=0)
-#     month = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-#     return hour, day, month
+def trim_times(unix_timestamp):
+    date = datetime.datetime.fromtimestamp(unix_timestamp)
+    hour = date.replace(minute=0, second=0, microsecond=0)
+    day = date.replace(hour=0, minute=0, second=0, microsecond=0)
+    month = date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    return hour, day, month
 
 
-# def increment(class_dict, src, dest, target_list):
-#     times = {}
-#     times["hour"], times["day"], times["month"] = trim_times(src.date)
-#     db_args = {}
-#     if dest:
-#         value = src
-#         for key in target_list:
-#             value = value[key]
-#         db_args[dest] = value
-#     for period in ["hour", "day", "month"]:
-#         doc = class_dict[period].objects(date=times[period], **db_args).first()
-#         if not doc:
-#             doc = class_dict[period]()
-#             doc.date = times[period]
-#             if dest:
-#                 doc[dest] = value
-#         doc.hits += 1
-#         doc.transfer += src.content_length
-#         doc.save()
+def increment(con, table, dt, data, **values):
+    stmt = insert(table) \
+        .values(
+            date=dt,
+            hits=1,
+            transfer=data['content_length'],
+            **values
+        ) \
+        .on_conflict_do_update(
+            index_elements=['date'],
+            set_=dict(
+                hits=table.c.hits + 1,
+                transfer=table.c.transfer + data['content_length']
+            )
+        )
+    con.execute(stmt)
 
 
 ######################################################
@@ -53,47 +63,20 @@ if not HAS_SQLALCHEMY:
 
 else:
 
-    # class UsageTrackerSumUrlHourly(db.Document):
-    #     url = db.StringField()
-    #     date = db.DateTimeField(required=True)
-    #     hits = db.IntField(requried=True, default=0)
-    #     transfer = db.IntField(required=True, default=0)
-    #     meta = {
-    #         'collection': "usageTracking_sumUrl_hourly"
-    #     }
-
-    # class UsageTrackerSumUrlDaily(db.Document):
-    #     url = db.StringField()
-    #     date = db.DateTimeField(required=True)
-    #     hits = db.IntField(requried=True, default=0)
-    #     transfer = db.IntField(required=True, default=0)
-    #     meta = {
-    #         'collection': "usageTracking_sumUrl_daily"
-    #     }
-
-    # class UsageTrackerSumUrlMonthly(db.Document):
-    #     url = db.StringField()
-    #     date = db.DateTimeField(required=True)
-    #     hits = db.IntField(requried=True, default=0)
-    #     transfer = db.IntField(required=True, default=0)
-    #     meta = {
-    #         'collection': "usageTracking_sumUrl_monthly"
-    #     }
-
-    # sumUrlClasses = {
-    #     "hour": UsageTrackerSumUrlHourly,
-    #     "day": UsageTrackerSumUrlDaily,
-    #     "month": UsageTrackerSumUrlMonthly,
-    # }
-
     def sumUrl(**kwargs):
         if not _check_environment(**kwargs):
             return
-        # TODO: open the three summary URL tables and increment the correct rows
+        if not _check_postgresql(**kwargs):
+            raise NotImplementedError("Only PostgreSQL currently supported")
+            return
 
-        # src = kwargs['mongoengine_document']
-        #
-        # increment(sumUrlClasses, src, "url", ["url"])
+        hour, day, month = trim_times(kwargs['date'])
+        x = kwargs["_parent_self"]
+        with x._eng.begin() as con:
+            increment(con, x.sum_tables["url_hourly"], hour, kwargs, url=kwargs['url'])
+            increment(con, x.sum_tables["url_daily"], day, kwargs, url=kwargs['url'])
+            increment(con, x.sum_tables["url_monthly"], month, kwargs, url=kwargs['url'])
+
         return
 
 
@@ -102,6 +85,29 @@ else:
 #   sumRemote
 #
 ######################################################
+
+if not HAS_SQLALCHEMY:
+
+    def sumRemote(**kwargs):
+        raise NotImplementedError("SQLAlchemy library not installed")
+
+else:
+
+    def sumRemote(**kwargs):
+        if not _check_environment(**kwargs):
+            return
+        if not _check_postgresql(**kwargs):
+            raise NotImplementedError("Only PostgreSQL currently supported")
+            return
+
+        hour, day, month = trim_times(kwargs['date'])
+        x = kwargs["_parent_self"]
+        with x._eng.begin() as con:
+            increment(con, x.sum_tables["remote_hourly"], hour, kwargs, remote=kwargs['remote_addr'])
+            increment(con, x.sum_tables["remote_daily"], day, kwargs, remote=kwargs['remote_addr'])
+            increment(con, x.sum_tables["remote_monthly"], month, kwargs, remote=kwargs['remote_addr'])
+
+        return
 
 
 ######################################################

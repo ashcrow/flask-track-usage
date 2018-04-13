@@ -50,7 +50,7 @@ class TrackUsage(object):
     Tracks basic usage of Flask applications.
     """
 
-    def __init__(self, app=None, storage=None):
+    def __init__(self, app=None, storage=None, _fake_time=None):
         """
         Create the instance.
 
@@ -58,11 +58,18 @@ class TrackUsage(object):
            - `app`: Optional app to use.
            - `storage`: If app is set, required list of storage callables.
         """
+        #
+        # `_fake_time` is to force the time stamp of the request for testing
+        # purposes. It is not normally used by end users. Must be a native
+        # datetime object.
+        #
         self._exclude_views = set()
         self._include_views = set()
 
         if callable(storage):
             storage = [storage]
+
+        self._fake_time = _fake_time
 
         if app is not None and storage is not None:
             self.init_app(app, storage)
@@ -137,6 +144,11 @@ class TrackUsage(object):
             speed = float("%s.%s" % (
                 speed_result.seconds, speed_result.microseconds))
 
+        if self._fake_time:
+            current_time = self._fake_time
+        else:
+            current_time = now
+
         data = {
             'url': ctx.request.url,
             'user_agent': ctx.request.user_agent,
@@ -150,7 +162,7 @@ class TrackUsage(object):
             'ip_info': None,
             'path': ctx.request.path,
             'speed': float(speed),
-            'date': int(time.mktime(now.timetuple())),
+            'date': int(time.mktime(current_time.timetuple())),
             'content_length': response.content_length,
             'request': "{} {} {}".format(
                 ctx.request.method,

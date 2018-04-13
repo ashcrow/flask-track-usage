@@ -128,9 +128,9 @@ class SQLStorage(Storage):
                 sum_table_name = "{}_{}".format(table_name, base_sum_table_name)
                 if not self._con.dialect.has_table(self._con, sum_table_name):
                     self.sum_tables[base_sum_table_name] = sql.Table(
-                        sum_table_name, self._metadata,
-                        sql.Column('id', sql.Integer, primary_key=True),
-                        sql.Column('date', sql.DateTime),
+                        sum_table_name,
+                        self._metadata,
+                        sql.Column('date', sql.DateTime, primary_key=True),
                         sql.Column(self.KEY_FIELD[base_sum_table_name], sql.String(128)),
                         sql.Column('hits', sql.Integer),
                         sql.Column('transfer', sql.Integer)
@@ -170,6 +170,7 @@ class SQLStorage(Storage):
                 datetime=utcdatetime
             )
             con.execute(stmt)
+        return data
 
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """

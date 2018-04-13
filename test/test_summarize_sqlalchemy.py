@@ -55,6 +55,14 @@ from flask import Blueprint
 from test import FlaskTrackUsageTestCase
 from flask_track_usage import TrackUsage
 from flask_track_usage.storage.sql import SQLStorage
+from flask_track_usage.summarization import (
+    sumUrl,
+    sumRemote,
+    sumUserAgent,
+    sumLanguage,
+    sumServer,
+)
+
 
 
 @unittest.skipUnless(HAS_SQLALCHEMY, "Requires SQLAlchemy")
@@ -68,7 +76,14 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
         self.storage = SQLStorage(
             engine=engine,
             metadata=metadata,
-            table_name=self.given_table_name
+            table_name=self.given_table_name,
+            hooks=[
+                sumUrl,
+                sumRemote,
+                # sumUserAgent,
+                # sumLanguage,
+                # sumServer
+            ]
         )
         metadata.create_all()
 
@@ -84,7 +99,16 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
 
         self._create_storage()
 
-        self.track_usage = TrackUsage(self.app, self.storage)
+        self.fake_time  = datetime.datetime(2018, 04, 15, 9, 45, 12)  # Apr 15, 2018 at 9:45:12 AM UTC
+        self.fake_hour  = datetime.datetime(2018, 04, 15, 9,  0,  0)  # Apr 15, 2018 at 9:00:00 AM UTC
+        self.fake_day   = datetime.datetime(2018, 04, 15, 0,  0,  0)  # Apr 15, 2018 at 0:00:00 AM UTC
+        self.fake_month = datetime.datetime(2018, 04,  1, 0,  0,  0)  # Apr  1, 2018 at 0:00:00 AM UTC
+
+        self.track_usage = TrackUsage(
+            self.app,
+            self.storage,
+            _fake_time=self.fake_time
+        )
         self.track_usage.include_blueprint(self.blueprint)
 
     def tearDown(self):
@@ -113,15 +137,187 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
         self.assertIn('my_usage_server_daily', meta.tables.keys())
         self.assertIn('my_usage_server_monthly', meta.tables.keys())
 
-    def test_url_summary(self):
-        # TODO: modify .get so that I can impose a specific time?
+    def test_basic_suite(self):
+        self.client.get('/')  # call 3 times to make sure upsert works
+        self.client.get('/')
         self.client.get('/')
         con = self.storage._eng.connect()
 
-        s = sql.select([self.storage.sum_tables["url_hourly"]])
+        table = self.storage.sum_tables["url_hourly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_hour)
         result = con.execute(s).fetchone()
-        print(result)
-        self.assertTrue(False)
+        assert result is not None
+        assert result[0] == self.fake_hour
+        assert result[1] == u'http://localhost/'
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["url_daily"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_day)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_day
+        assert result[1] == u'http://localhost/'
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["url_monthly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_month)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_month
+        assert result[1] == u'http://localhost/'
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["remote_hourly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_hour)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_hour
+        assert result[1] == "127.0.0.1"
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["remote_daily"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_day)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_day
+        assert result[1] == "127.0.0.1"
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["remote_monthly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_month)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_month
+        assert result[1] == "127.0.0.1"
+        assert result[2] == 3
+        assert result[3] == 18
+
+        # table = self.storage.sum_tables["url_hourly"]
+        # s = sql \
+        #     .select([table]) \
+        #     .where(table.c.date==self.fake_hour)
+        # result = con.execute(s).fetchone()
+        # assert result is not None
+        # assert result[0] == self.fake_hour
+        # assert result[1] == u'http://localhost/'
+        # assert result[2] == 3
+        # assert result[3] == 18
+
+        # table = self.storage.sum_tables["url_hourly"]
+        # s = sql \
+        #     .select([table]) \
+        #     .where(table.c.date==self.fake_hour)
+        # result = con.execute(s).fetchone()
+        # assert result is not None
+        # assert result[0] == self.fake_hour
+        # assert result[1] == u'http://localhost/'
+        # assert result[2] == 3
+        # assert result[3] == 18
+
+        # table = self.storage.sum_tables["url_hourly"]
+        # s = sql \
+        #     .select([table]) \
+        #     .where(table.c.date==self.fake_hour)
+        # result = con.execute(s).fetchone()
+        # assert result is not None
+        # assert result[0] == self.fake_hour
+        # assert result[1] == u'http://localhost/'
+        # assert result[2] == 3
+        # assert result[3] == 18
+
+        # table = self.storage.sum_tables["url_hourly"]
+        # s = sql \
+        #     .select([table]) \
+        #     .where(table.c.date==self.fake_hour)
+        # result = con.execute(s).fetchone()
+        # assert result is not None
+        # assert result[0] == self.fake_hour
+        # assert result[1] == u'http://localhost/'
+        # assert result[2] == 3
+        # assert result[3] == 18
+
+        # table = self.storage.sum_tables["url_hourly"]
+        # s = sql \
+        #     .select([table]) \
+        #     .where(table.c.date==self.fake_hour)
+        # result = con.execute(s).fetchone()
+        # assert result is not None
+        # assert result[0] == self.fake_hour
+        # assert result[1] == u'http://localhost/'
+        # assert result[2] == 3
+        # assert result[3] == 18
+
+        # table = self.storage.sum_tables["url_hourly"]
+        # s = sql \
+        #     .select([table]) \
+        #     .where(table.c.date==self.fake_hour)
+        # result = con.execute(s).fetchone()
+        # assert result is not None
+        # assert result[0] == self.fake_hour
+        # assert result[1] == u'http://localhost/'
+        # assert result[2] == 3
+        # assert result[3] == 18
+
+        # table = self.storage.sum_tables["url_hourly"]
+        # s = sql \
+        #     .select([table]) \
+        #     .where(table.c.date==self.fake_hour)
+        # result = con.execute(s).fetchone()
+        # assert result is not None
+        # assert result[0] == self.fake_hour
+        # assert result[1] == u'http://localhost/'
+        # assert result[2] == 3
+        # assert result[3] == 18
+
+        # table = self.storage.sum_tables["url_hourly"]
+        # s = sql \
+        #     .select([table]) \
+        #     .where(table.c.date==self.fake_hour)
+        # result = con.execute(s).fetchone()
+        # assert result is not None
+        # assert result[0] == self.fake_hour
+        # assert result[1] == u'http://localhost/'
+        # assert result[2] == 3
+        # assert result[3] == 18
+
+        # table = self.storage.sum_tables["url_hourly"]
+        # s = sql \
+        #     .select([table]) \
+        #     .where(table.c.date==self.fake_hour)
+        # result = con.execute(s).fetchone()
+        # assert result is not None
+        # assert result[0] == self.fake_hour
+        # assert result[1] == u'http://localhost/'
+        # assert result[2] == 3
+        # assert result[3] == 18
+
+        # table = self.storage.sum_tables["url_hourly"]
+        # s = sql \
+        #     .select([table]) \
+        #     .where(table.c.date==self.fake_hour)
+        # result = con.execute(s).fetchone()
+        # assert result is not None
+        # assert result[0] == self.fake_hour
+        # assert result[1] == u'http://localhost/'
+        # assert result[2] == 3
+        # assert result[3] == 18
 
 
 
