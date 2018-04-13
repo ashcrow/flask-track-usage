@@ -12,10 +12,12 @@ try:
 except ImportError:
     HAS_POSTGRES = False
 
+
 def _check_environment(**kwargs):
     if not HAS_SQLALCHEMY:
         return False
     return True
+
 
 def _check_postgresql(**kwargs):
     if not HAS_POSTGRES:
@@ -23,6 +25,7 @@ def _check_postgresql(**kwargs):
     if kwargs["_parent_self"]._eng.driver != 'psycopg2':
         return False
     return True
+
 
 def trim_times(unix_timestamp):
     date = datetime.datetime.fromtimestamp(unix_timestamp)
@@ -264,13 +267,15 @@ else:
         hour, day, month = trim_times(kwargs['date'])
         x = kwargs["_parent_self"]
         with x._eng.begin() as con:
-            increment(con,
+            increment(
+                con,
                 x.sum_tables["server_hourly"],
                 hour,
                 kwargs,
                 server=kwargs["server_name"]
             )
-            increment(con,
+            increment(
+                con,
                 x.sum_tables["server_daily"],
                 day,
                 kwargs,

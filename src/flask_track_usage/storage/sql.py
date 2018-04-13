@@ -125,19 +125,25 @@ class SQLStorage(Storage):
                 self.track_table = self._metadata.tables[table_name]
             # add summary tables
             for base_sum_table_name in self.SUMMARY_LIST:
-                sum_table_name = "{}_{}".format(table_name, base_sum_table_name)
+                sum_table_name = "{}_{}".format(
+                    table_name, base_sum_table_name
+                )
                 if not self._con.dialect.has_table(self._con, sum_table_name):
                     self.sum_tables[base_sum_table_name] = sql.Table(
                         sum_table_name,
                         self._metadata,
                         sql.Column('date', sql.DateTime, primary_key=True),
-                        sql.Column(self.KEY_FIELD[base_sum_table_name], sql.String(128)),
+                        sql.Column(
+                            self.KEY_FIELD[base_sum_table_name],
+                            sql.String(128)
+                        ),
                         sql.Column('hits', sql.Integer),
                         sql.Column('transfer', sql.Integer)
                     )
                 else:
                     self._metadata.reflect(bind=self._eng)
-                    self.sum_tables[base_sum_table_name] = self._metadata.tables[sum_table_name]
+                    self.sum_tables[base_sum_table_name] = \
+                        self._metadata.tables[sum_table_name]
 
     def store(self, data):
         """
