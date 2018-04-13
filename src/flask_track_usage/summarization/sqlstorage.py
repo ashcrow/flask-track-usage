@@ -73,9 +73,27 @@ else:
         hour, day, month = trim_times(kwargs['date'])
         x = kwargs["_parent_self"]
         with x._eng.begin() as con:
-            increment(con, x.sum_tables["url_hourly"], hour, kwargs, url=kwargs['url'])
-            increment(con, x.sum_tables["url_daily"], day, kwargs, url=kwargs['url'])
-            increment(con, x.sum_tables["url_monthly"], month, kwargs, url=kwargs['url'])
+            increment(
+                con,
+                x.sum_tables["url_hourly"],
+                hour,
+                kwargs,
+                url=kwargs['url']
+            )
+            increment(
+                con,
+                x.sum_tables["url_daily"],
+                day,
+                kwargs,
+                url=kwargs['url']
+            )
+            increment(
+                con,
+                x.sum_tables["url_monthly"],
+                month,
+                kwargs,
+                url=kwargs['url']
+            )
 
         return
 
@@ -103,9 +121,27 @@ else:
         hour, day, month = trim_times(kwargs['date'])
         x = kwargs["_parent_self"]
         with x._eng.begin() as con:
-            increment(con, x.sum_tables["remote_hourly"], hour, kwargs, remote=kwargs['remote_addr'])
-            increment(con, x.sum_tables["remote_daily"], day, kwargs, remote=kwargs['remote_addr'])
-            increment(con, x.sum_tables["remote_monthly"], month, kwargs, remote=kwargs['remote_addr'])
+            increment(
+                con,
+                x.sum_tables["remote_hourly"],
+                hour,
+                kwargs,
+                remote=kwargs['remote_addr']
+            )
+            increment(
+                con,
+                x.sum_tables["remote_daily"],
+                day,
+                kwargs,
+                remote=kwargs['remote_addr']
+            )
+            increment(
+                con,
+                x.sum_tables["remote_monthly"],
+                month,
+                kwargs,
+                remote=kwargs['remote_addr']
+            )
 
         return
 
@@ -116,6 +152,47 @@ else:
 #
 ######################################################
 
+if not HAS_SQLALCHEMY:
+
+    def sumUserAgent(**kwargs):
+        raise NotImplementedError("SQLAlchemy library not installed")
+
+else:
+
+    def sumUserAgent(**kwargs):
+        if not _check_environment(**kwargs):
+            return
+        if not _check_postgresql(**kwargs):
+            raise NotImplementedError("Only PostgreSQL currently supported")
+            return
+
+        hour, day, month = trim_times(kwargs['date'])
+        x = kwargs["_parent_self"]
+        with x._eng.begin() as con:
+            increment(
+                con,
+                x.sum_tables["useragent_hourly"],
+                hour,
+                kwargs,
+                useragent=str(kwargs['user_agent'])
+            )
+            increment(
+                con,
+                x.sum_tables["useragent_daily"],
+                day,
+                kwargs,
+                useragent=str(kwargs['user_agent'])
+            )
+            increment(
+                con,
+                x.sum_tables["useragent_monthly"],
+                month,
+                kwargs,
+                useragent=str(kwargs['user_agent'])
+            )
+
+        return
+
 
 ######################################################
 #
@@ -123,6 +200,46 @@ else:
 #
 ######################################################
 
+if not HAS_SQLALCHEMY:
+
+    def sumLanguage(**kwargs):
+        raise NotImplementedError("SQLAlchemy library not installed")
+
+else:
+
+    def sumLanguage(**kwargs):
+        if not _check_environment(**kwargs):
+            return
+        if not _check_postgresql(**kwargs):
+            raise NotImplementedError("Only PostgreSQL currently supported")
+            return
+
+        hour, day, month = trim_times(kwargs['date'])
+        x = kwargs["_parent_self"]
+        with x._eng.begin() as con:
+            increment(
+                con,
+                x.sum_tables["language_hourly"],
+                hour,
+                kwargs,
+                language=kwargs['user_agent'].language
+            )
+            increment(
+                con,
+                x.sum_tables["language_daily"],
+                day,
+                kwargs,
+                language=kwargs['user_agent'].language
+            )
+            increment(
+                con,
+                x.sum_tables["language_monthly"],
+                month,
+                kwargs,
+                language=kwargs['user_agent'].language
+            )
+
+        return
 
 ######################################################
 #
@@ -130,3 +247,41 @@ else:
 #
 ######################################################
 
+if not HAS_SQLALCHEMY:
+
+    def sumServer(**kwargs):
+        raise NotImplementedError("SQLAlchemy library not installed")
+
+else:
+
+    def sumServer(**kwargs):
+        if not _check_environment(**kwargs):
+            return
+        if not _check_postgresql(**kwargs):
+            raise NotImplementedError("Only PostgreSQL currently supported")
+            return
+
+        hour, day, month = trim_times(kwargs['date'])
+        x = kwargs["_parent_self"]
+        with x._eng.begin() as con:
+            increment(con,
+                x.sum_tables["server_hourly"],
+                hour,
+                kwargs,
+                server="self"
+            )
+            increment(con,
+                x.sum_tables["server_daily"],
+                day,
+                kwargs,
+                server="self"
+            )
+            increment(
+                con,
+                x.sum_tables["server_monthly"],
+                month,
+                kwargs,
+                server="self"
+            )
+
+        return
