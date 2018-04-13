@@ -80,9 +80,9 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
             hooks=[
                 sumUrl,
                 sumRemote,
-                # sumUserAgent,
-                # sumLanguage,
-                # sumServer
+                sumUserAgent,
+                sumLanguage,
+                sumServer
             ]
         )
         metadata.create_all()
@@ -143,6 +143,8 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
         self.client.get('/')
         con = self.storage._eng.connect()
 
+        # URL
+
         table = self.storage.sum_tables["url_hourly"]
         s = sql \
             .select([table]) \
@@ -175,6 +177,8 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
         assert result[1] == u'http://localhost/'
         assert result[2] == 3
         assert result[3] == 18
+
+        # REMOTE IP
 
         table = self.storage.sum_tables["remote_hourly"]
         s = sql \
@@ -209,286 +213,106 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
         assert result[2] == 3
         assert result[3] == 18
 
-        # table = self.storage.sum_tables["url_hourly"]
-        # s = sql \
-        #     .select([table]) \
-        #     .where(table.c.date==self.fake_hour)
-        # result = con.execute(s).fetchone()
-        # assert result is not None
-        # assert result[0] == self.fake_hour
-        # assert result[1] == u'http://localhost/'
-        # assert result[2] == 3
-        # assert result[3] == 18
+        # USER AGENT
 
-        # table = self.storage.sum_tables["url_hourly"]
-        # s = sql \
-        #     .select([table]) \
-        #     .where(table.c.date==self.fake_hour)
-        # result = con.execute(s).fetchone()
-        # assert result is not None
-        # assert result[0] == self.fake_hour
-        # assert result[1] == u'http://localhost/'
-        # assert result[2] == 3
-        # assert result[3] == 18
+        table = self.storage.sum_tables["useragent_hourly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_hour)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_hour
+        assert result[1].startswith("werkzeug/")
+        assert result[2] == 3
+        assert result[3] == 18
 
-        # table = self.storage.sum_tables["url_hourly"]
-        # s = sql \
-        #     .select([table]) \
-        #     .where(table.c.date==self.fake_hour)
-        # result = con.execute(s).fetchone()
-        # assert result is not None
-        # assert result[0] == self.fake_hour
-        # assert result[1] == u'http://localhost/'
-        # assert result[2] == 3
-        # assert result[3] == 18
+        table = self.storage.sum_tables["useragent_daily"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_day)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_day
+        assert result[1].startswith("werkzeug/")
+        assert result[2] == 3
+        assert result[3] == 18
 
-        # table = self.storage.sum_tables["url_hourly"]
-        # s = sql \
-        #     .select([table]) \
-        #     .where(table.c.date==self.fake_hour)
-        # result = con.execute(s).fetchone()
-        # assert result is not None
-        # assert result[0] == self.fake_hour
-        # assert result[1] == u'http://localhost/'
-        # assert result[2] == 3
-        # assert result[3] == 18
+        table = self.storage.sum_tables["useragent_monthly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_month)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_month
+        assert result[1].startswith("werkzeug/")
+        assert result[2] == 3
+        assert result[3] == 18
 
-        # table = self.storage.sum_tables["url_hourly"]
-        # s = sql \
-        #     .select([table]) \
-        #     .where(table.c.date==self.fake_hour)
-        # result = con.execute(s).fetchone()
-        # assert result is not None
-        # assert result[0] == self.fake_hour
-        # assert result[1] == u'http://localhost/'
-        # assert result[2] == 3
-        # assert result[3] == 18
+        # LANGUAGE
 
-        # table = self.storage.sum_tables["url_hourly"]
-        # s = sql \
-        #     .select([table]) \
-        #     .where(table.c.date==self.fake_hour)
-        # result = con.execute(s).fetchone()
-        # assert result is not None
-        # assert result[0] == self.fake_hour
-        # assert result[1] == u'http://localhost/'
-        # assert result[2] == 3
-        # assert result[3] == 18
+        table = self.storage.sum_tables["language_hourly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_hour)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_hour
+        assert result[1] == u'http://localhost/'
+        assert result[2] == 3
+        assert result[3] == 18
 
-        # table = self.storage.sum_tables["url_hourly"]
-        # s = sql \
-        #     .select([table]) \
-        #     .where(table.c.date==self.fake_hour)
-        # result = con.execute(s).fetchone()
-        # assert result is not None
-        # assert result[0] == self.fake_hour
-        # assert result[1] == u'http://localhost/'
-        # assert result[2] == 3
-        # assert result[3] == 18
-
-        # table = self.storage.sum_tables["url_hourly"]
-        # s = sql \
-        #     .select([table]) \
-        #     .where(table.c.date==self.fake_hour)
-        # result = con.execute(s).fetchone()
-        # assert result is not None
-        # assert result[0] == self.fake_hour
-        # assert result[1] == u'http://localhost/'
-        # assert result[2] == 3
-        # assert result[3] == 18
-
-        # table = self.storage.sum_tables["url_hourly"]
-        # s = sql \
-        #     .select([table]) \
-        #     .where(table.c.date==self.fake_hour)
-        # result = con.execute(s).fetchone()
-        # assert result is not None
-        # assert result[0] == self.fake_hour
-        # assert result[1] == u'http://localhost/'
-        # assert result[2] == 3
-        # assert result[3] == 18
-
-        # table = self.storage.sum_tables["url_hourly"]
-        # s = sql \
-        #     .select([table]) \
-        #     .where(table.c.date==self.fake_hour)
-        # result = con.execute(s).fetchone()
-        # assert result is not None
-        # assert result[0] == self.fake_hour
-        # assert result[1] == u'http://localhost/'
-        # assert result[2] == 3
-        # assert result[3] == 18
+        table = self.storage.sum_tables["language_daily"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_day)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_day
+        assert result[1] == u'http://localhost/'
+        assert result[2] == 3
+        assert result[3] == 18
 
 
+        table = self.storage.sum_tables["language_monthly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_month)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_month
+        assert result[1] == u'http://localhost/'
+        assert result[2] == 3
+        assert result[3] == 18
 
-# from flask_track_usage import TrackUsage
-# # from flask_track_usage.storage.mongo import MongoEngineStorage
-# from flask_track_usage.summarization import (
-#     sumUrl,
-#     sumRemote,
-#     sumUserAgent,
-#     sumLanguage,
-#     sumServer,
-# )
+        # WHOLE SERVER
 
-# # if HAS_MONGOENGINE:
-# #     from flask_track_usage.summarization.postgresqlstorage import (
-# #         UsageTrackerSumUrlHourly,
-# #         UsageTrackerSumUrlDaily,
-# #         UsageTrackerSumUrlMonthly,
-# #         UsageTrackerSumRemoteHourly,
-# #         UsageTrackerSumRemoteDaily,
-# #         UsageTrackerSumRemoteMonthly,
-# #         UsageTrackerSumUserAgentHourly,
-# #         UsageTrackerSumUserAgentDaily,
-# #         UsageTrackerSumUserAgentMonthly,
-# #         UsageTrackerSumLanguageHourly,
-# #         UsageTrackerSumLanguageDaily,
-# #         UsageTrackerSumLanguageMonthly,
-# #         UsageTrackerSumServerHourly,
-# #         UsageTrackerSumServerDaily,
-# #         UsageTrackerSumServerMonthly,
-# #     )
-
-# from . import FlaskTrackUsageTestCase
+        table = self.storage.sum_tables["server_hourly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_hour)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_hour
+        assert result[2] == 3
+        assert result[3] == 18
 
 
-# @unittest.skipUnless(HAS_MONGOENGINE, "Requires MongoEngine")
-# class TestMongoEngineSummarizeBasic(FlaskTrackUsageTestCase):
-#     """
-#     Tests MongoEngine summaries.
-#     """
+        table = self.storage.sum_tables["server_daily"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_day)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_day
+        assert result[2] == 3
+        assert result[3] == 18
 
-#     def setUp(self):
-#         """
-#         Set up an app to test with.
-#         """
-#         FlaskTrackUsageTestCase.setUp(self)
-#         self.storage = MongoEngineStorage(hooks=[
-#             sumUrl,
-#             sumRemote,
-#             sumUserAgent,
-#             sumLanguage,
-#             sumServer
-#         ])
-#         self.track_usage = TrackUsage(self.app, self.storage)
-#         # Clean out the summary
-#         UsageTrackerSumUrlHourly.drop_collection()
-#         UsageTrackerSumUrlDaily.drop_collection()
-#         UsageTrackerSumUrlMonthly.drop_collection()
-#         UsageTrackerSumRemoteHourly.drop_collection()
-#         UsageTrackerSumRemoteDaily.drop_collection()
-#         UsageTrackerSumRemoteMonthly.drop_collection()
-#         UsageTrackerSumUserAgentHourly.drop_collection()
-#         UsageTrackerSumUserAgentDaily.drop_collection()
-#         UsageTrackerSumUserAgentMonthly.drop_collection()
-#         UsageTrackerSumLanguageHourly.drop_collection()
-#         UsageTrackerSumLanguageDaily.drop_collection()
-#         UsageTrackerSumLanguageMonthly.drop_collection()
-#         UsageTrackerSumServerHourly.drop_collection()
-#         UsageTrackerSumServerDaily.drop_collection()
-#         UsageTrackerSumServerMonthly.drop_collection()
-#         # trigger one timed summary
-#         self.now = datetime.datetime.utcnow()
-#         self.hour = self.now.replace(minute=0, second=0, microsecond=0)
-#         self.day = self.now.replace(hour=0, minute=0, second=0, microsecond=0)
-#         self.month = self.now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-#         self.client.get('/')
-
-#     def test_postgresql_url_summary(self):
-#         """
-#         Test MongoEngine url summarization.
-#         """
-#         hour_doc = UsageTrackerSumUrlHourly.objects.first()
-#         assert hour_doc.url == 'http://localhost/'
-#         assert hour_doc.date == self.hour
-#         assert hour_doc.hits == 1
-#         assert hour_doc.transfer > 1
-#         day_doc = UsageTrackerSumUrlDaily.objects.first()
-#         assert day_doc.url == 'http://localhost/'
-#         assert day_doc.date == self.day
-#         assert day_doc.hits == 1
-#         assert day_doc.transfer > 1
-#         month_doc = UsageTrackerSumUrlMonthly.objects.first()
-#         assert month_doc.url == 'http://localhost/'
-#         assert month_doc.date == self.month
-#         assert month_doc.hits == 1
-#         assert month_doc.transfer > 1
-
-    # def test_postgresql_remote_summary(self):
-    #     """
-    #     Test MongoEngine remote IP summarization.
-    #     """
-    #     hour_doc = UsageTrackerSumRemoteHourly.objects.first()
-    #     assert hour_doc.remote_addr == '127.0.0.1'
-    #     assert hour_doc.date == self.hour
-    #     assert hour_doc.hits == 1
-    #     assert hour_doc.transfer > 1
-    #     day_doc = UsageTrackerSumRemoteDaily.objects.first()
-    #     assert day_doc.remote_addr == '127.0.0.1'
-    #     assert day_doc.date == self.day
-    #     assert day_doc.hits == 1
-    #     assert day_doc.transfer > 1
-    #     month_doc = UsageTrackerSumRemoteMonthly.objects.first()
-    #     assert month_doc.remote_addr == '127.0.0.1'
-    #     assert month_doc.date == self.month
-    #     assert month_doc.hits == 1
-    #     assert month_doc.transfer > 1
-
-    # def test_postgresql_user_agent_summary(self):
-    #     """
-    #     Test MongoEngine User Agent summarization.
-    #     """
-    #     hour_doc = UsageTrackerSumUserAgentHourly.objects.first()
-    #     assert hour_doc.user_agent_string.startswith("werkzeug/")
-    #     assert hour_doc.date == self.hour
-    #     assert hour_doc.hits == 1
-    #     assert hour_doc.transfer > 1
-    #     day_doc = UsageTrackerSumUserAgentDaily.objects.first()
-    #     assert day_doc.user_agent_string.startswith("werkzeug/")
-    #     assert day_doc.date == self.day
-    #     assert day_doc.hits == 1
-    #     assert day_doc.transfer > 1
-    #     month_doc = UsageTrackerSumUserAgentMonthly.objects.first()
-    #     assert month_doc.user_agent_string.startswith("werkzeug/")
-    #     assert month_doc.date == self.month
-    #     assert month_doc.hits == 1
-    #     assert month_doc.transfer > 1
-
-    # def test_postgresql_language_summary(self):
-    #     """
-    #     Test MongoEngine Language summarization.
-    #     """
-    #     hour_doc = UsageTrackerSumLanguageHourly.objects.first()
-    #     assert hour_doc.language == 'none'
-    #     assert hour_doc.date == self.hour
-    #     assert hour_doc.hits == 1
-    #     assert hour_doc.transfer > 1
-    #     day_doc = UsageTrackerSumLanguageDaily.objects.first()
-    #     assert day_doc.language == 'none'
-    #     assert day_doc.date == self.day
-    #     assert day_doc.hits == 1
-    #     assert day_doc.transfer > 1
-    #     month_doc = UsageTrackerSumLanguageMonthly.objects.first()
-    #     assert month_doc.language == 'none'
-    #     assert month_doc.date == self.month
-    #     assert month_doc.hits == 1
-    #     assert month_doc.transfer > 1
-
-    # def test_postgresql_server_summary(self):
-    #     """
-    #     Test MongoEngine server summarization.
-    #     """
-    #     hour_doc = UsageTrackerSumServerHourly.objects.first()
-    #     assert hour_doc.date == self.hour
-    #     assert hour_doc.hits == 1
-    #     assert hour_doc.transfer > 1
-    #     day_doc = UsageTrackerSumServerDaily.objects.first()
-    #     assert day_doc.date == self.day
-    #     assert day_doc.hits == 1
-    #     assert day_doc.transfer > 1
-    #     month_doc = UsageTrackerSumServerMonthly.objects.first()
-    #     assert month_doc.date == self.month
-    #     assert month_doc.hits == 1
-    #     assert month_doc.transfer > 1
-
+        table = self.storage.sum_tables["server_monthly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_month)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_month
+        assert result[2] == 3
+        assert result[3] == 18
