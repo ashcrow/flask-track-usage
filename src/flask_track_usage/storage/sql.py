@@ -53,17 +53,6 @@ class SQLStorage(Storage):
        A SQLAlchemy metadata instance can optionally be passed in.
     """
 
-    SUMMARY_LIST = [
-        "url_hourly", "url_daily", "url_monthly",
-        "remote_hourly", "remote_daily", "remote_monthly",
-        "useragent_hourly", "useragent_daily", "useragent_monthly",
-        "language_hourly", "language_daily", "language_monthly",
-        "server_hourly", "server_daily", "server_monthly",
-    ]
-    KEY_FIELD = {}
-    for table_name in SUMMARY_LIST:
-        KEY_FIELD[table_name], _ = table_name.split("_")
-
     def set_up(self, engine=None, metadata=None, table_name="flask_usage",
                db=None):
         """
@@ -97,6 +86,7 @@ class SQLStorage(Storage):
                 raise ValueError("Both db and engine args cannot be None")
             self._eng = engine
             self._metadata = metadata or sql.MetaData()
+        self.table_name = table_name
         self.sum_tables = {}
         self._con = None
         with self._eng.begin() as self._con:
@@ -123,27 +113,6 @@ class SQLStorage(Storage):
             else:
                 self._metadata.reflect(bind=self._eng)
                 self.track_table = self._metadata.tables[table_name]
-            # add summary tables
-            for base_sum_table_name in self.SUMMARY_LIST:
-                sum_table_name = "{}_{}".format(
-                    table_name, base_sum_table_name
-                )
-                if not self._con.dialect.has_table(self._con, sum_table_name):
-                    self.sum_tables[base_sum_table_name] = sql.Table(
-                        sum_table_name,
-                        self._metadata,
-                        sql.Column('date', sql.DateTime, primary_key=True),
-                        sql.Column(
-                            self.KEY_FIELD[base_sum_table_name],
-                            sql.String(128)
-                        ),
-                        sql.Column('hits', sql.Integer),
-                        sql.Column('transfer', sql.Integer)
-                    )
-                else:
-                    self._metadata.reflect(bind=self._eng)
-                    self.sum_tables[base_sum_table_name] = \
-                        self._metadata.tables[sum_table_name]
 
     def store(self, data):
         """

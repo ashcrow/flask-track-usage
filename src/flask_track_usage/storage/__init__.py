@@ -32,6 +32,8 @@
 Simple storage callables package.
 """
 
+import inspect
+
 
 class _BaseWritable(object):
     """
@@ -48,11 +50,23 @@ class _BaseWritable(object):
            - `kwargs`: All keyword arguments.
         """
         if "hooks" in kwargs:
-            self._post_storage_hooks = kwargs["hooks"]
+            self._temp_hooks = kwargs["hooks"]
             del kwargs["hooks"]
         else:
-            self._post_storage_hooks = []
+            self._temp_hooks = []
+        #
         self.set_up(*args, **kwargs)
+        #
+        # instantiate each hook if not already instantiated
+        kwargs["_parent_class_name"] = self.__class__.__name__
+        kwargs['_parent_self'] = self
+        self._post_storage_hooks = []
+        for hook in self._temp_hooks:
+            if inspect.isclass(hook):
+                self._post_storage_hooks.append(hook(**kwargs))
+            else:
+                self._post_storage_hooks.append(hook)
+        self._temp_hooks = None
 
     def set_up(self, *args, **kwargs):
         """

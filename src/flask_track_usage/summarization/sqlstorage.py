@@ -53,6 +53,29 @@ def increment(con, table, dt, data, **values):
     con.execute(stmt)
 
 
+def create_tables(table_list, **kwargs):
+    self = kwargs["_parent_self"]
+    with self._eng.begin() as self._con:
+        for base_sum_table_name in table_list:
+            key_field, _ = base_sum_table_name.split("_")
+            sum_table_name = "{}_{}".format(
+                self.table_name, base_sum_table_name
+            )
+            if not self._con.dialect.has_table(self._con, sum_table_name):
+                self.sum_tables[base_sum_table_name] = sql.Table(
+                    sum_table_name,
+                    self._metadata,
+                    sql.Column('date', sql.DateTime, primary_key=True),
+                    sql.Column(key_field, sql.String(128)),
+                    sql.Column('hits', sql.Integer),
+                    sql.Column('transfer', sql.Integer)
+                )
+            else:
+                self._metadata.reflect(bind=self._eng)
+                self.sum_tables[base_sum_table_name] = \
+                    self._metadata.tables[sum_table_name]
+
+
 ######################################################
 #
 #   sumURL
@@ -65,6 +88,10 @@ if not HAS_SQLALCHEMY:
         raise NotImplementedError("SQLAlchemy library not installed")
 
 else:
+
+    def sumUrl_set_up(*args, **kwargs):
+        tables = ["url_hourly", "url_daily", "url_monthly"]
+        create_tables(tables, **kwargs)
 
     def sumUrl(**kwargs):
         if not _check_environment(**kwargs):
@@ -114,6 +141,10 @@ if not HAS_SQLALCHEMY:
 
 else:
 
+    def sumRemote_set_up(*args, **kwargs):
+        tables = ["remote_hourly", "remote_daily", "remote_monthly"]
+        create_tables(tables, **kwargs)
+
     def sumRemote(**kwargs):
         if not _check_environment(**kwargs):
             return
@@ -161,6 +192,10 @@ if not HAS_SQLALCHEMY:
         raise NotImplementedError("SQLAlchemy library not installed")
 
 else:
+
+    def sumUserAgent_set_up(*args, **kwargs):
+        tables = ["useragent_hourly", "useragent_daily", "useragent_monthly"]
+        create_tables(tables, **kwargs)
 
     def sumUserAgent(**kwargs):
         if not _check_environment(**kwargs):
@@ -210,6 +245,10 @@ if not HAS_SQLALCHEMY:
 
 else:
 
+    def sumLanguage_set_up(*args, **kwargs):
+        tables = ["language_hourly", "language_daily", "language_monthly"]
+        create_tables(tables, **kwargs)
+
     def sumLanguage(**kwargs):
         if not _check_environment(**kwargs):
             return
@@ -256,6 +295,10 @@ if not HAS_SQLALCHEMY:
         raise NotImplementedError("SQLAlchemy library not installed")
 
 else:
+
+    def sumServer_set_up(*args, **kwargs):
+        tables = ["server_hourly", "server_daily", "server_monthly"]
+        create_tables(tables, **kwargs)
 
     def sumServer(**kwargs):
         if not _check_environment(**kwargs):

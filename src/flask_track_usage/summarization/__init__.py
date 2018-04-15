@@ -10,6 +10,29 @@ passed.
 """
 
 
+def _set_up(sum_name, **kwargs):
+    method_name = "{}_set_up".format(sum_name)
+    if "_parent_class_name" not in kwargs:
+        raise NotImplementedError(
+            "{} can only be used as a Storage class hook.".format(method_name)
+        )
+    try:
+        lib_name = kwargs["_parent_class_name"].lower()
+        library = globals()[lib_name]
+    except KeyError:
+        raise ImportError(
+            "the {} class does not currently support"
+            " summarization.".format(kwargs["_parent_class_name"])
+        )
+    try:
+        method = getattr(library, method_name)
+    except AttributeError:
+        # not having *_set_up is fine: gracefully return
+        return
+    method(**kwargs)
+
+
+
 def _caller(method_name, **kwargs):
     if "_parent_class_name" not in kwargs:
         raise NotImplementedError(
@@ -32,45 +55,74 @@ def _caller(method_name, **kwargs):
     method(**kwargs)
 
 
-def sumUrl(**kwargs):
-    """
-    Traffic is summarized for each URL requested of the Flask server.
-    """
-    _caller("sumUrl", **kwargs)
+class sumUrl(object):
+
+    def __init__(self, **kwargs):
+        self.init_kwargs = kwargs
+        _set_up("sumUrl", **kwargs)
+        return
+
+    def __call__(self, **kwargs):
+        _caller("sumUrl", **kwargs)
 
 
-def sumRemote(**kwargs):
+class sumRemote(object):
     """
     Traffic is summarized for each remote IP address seen by the Flask server.
     """
-    _caller("sumRemote", **kwargs)
+    def __init__(self, **kwargs):
+        self.init_kwargs = kwargs
+        _set_up("sumRemote", **kwargs)
+        return
+
+    def __call__(self, **kwargs):
+        _caller("sumRemote", **kwargs)
 
 
-def sumUserAgent(**kwargs):
+class sumUserAgent(object):
     """
     Traffic is summarized for each client (aka web browser) seen by the Flask
     server.
     """
-    _caller("sumUserAgent", **kwargs)
+    def __init__(self, **kwargs):
+        self.init_kwargs = kwargs
+        _set_up("sumUserAgent", **kwargs)
+        return
+
+    def __call__(self, **kwargs):
+        _caller("sumUserAgent", **kwargs)
 
 
-def sumLanguage(**kwargs):
+class sumLanguage(object):
     """
     Traffic is summarized for each language seen in the requests sent to the
     Flask server.
     """
-    _caller("sumLanguage", **kwargs)
+    def __init__(self, **kwargs):
+        self.init_kwargs = kwargs
+        _set_up("sumLanguage", **kwargs)
+        return
+
+    def __call__(self, **kwargs):
+        _caller("sumLanguage", **kwargs)
 
 
-def sumServer(**kwargs):
+class sumServer(object):
     """
     Traffic is summarized for all requests sent to the Flask server. This
     metric is mostly useful for diagnosing performance.
     """
-    _caller("sumServer", **kwargs)
+    def __init__(self, **kwargs):
+        self.init_kwargs = kwargs
+        _set_up("sumServer", **kwargs)
+        return
+
+    def __call__(self, **kwargs):
+        _caller("sumServer", **kwargs)
 
 
-def sumVisitor(**kwargs):
+# TBD
+class sumVisitor(object):
     """
     Traffic is summarized for each unique visitor of the Flask server. For this
     to function, the optional TRACK_USAGE_COOKIE function must be enabled in
@@ -80,10 +132,17 @@ def sumVisitor(**kwargs):
     switching browsers or turning on "anonymous mode" on a browser will make
     them appear to be multiple users.
     """
-    _caller("sumVisitor", **kwargs)
+    def __init__(self, **kwargs):
+        self.init_kwargs = kwargs
+        _set_up("sumVisitor", **kwargs)
+        return
+
+    def __call__(self, **kwargs):
+        _caller("sumVisitor", **kwargs)
 
 
-def sumGeo(**kwargs):
+#TBD
+class sumGeo(object):
     """
     Traffic is summarized for the tracked geographies of remote IPs seen by the
     Flask server. For this to properly function, the optional
@@ -91,16 +150,32 @@ def sumGeo(**kwargs):
     provides a great deal of information, only the country is used for this
     summarization.
     """
-    _caller("sumGeo", **kwargs)
+    def __init__(self, **kwargs):
+        self.init_kwargs = kwargs
+        _set_up("sumGeo", **kwargs)
+        return
+
+    def __call__(self, **kwargs):
+        _caller("sumGeo", **kwargs)
 
 
-def sumBasic(**kwargs):
+class sumBasic(object):
     """
-    A shortcut that, in turn, calls sumUrls, sumRemotes, sumUserAgents,
-    sumLanguages, and sumServer
+    A shortcut that, in turn, calls sumUrl, sumRemote, sumUserAgent,
+    sumLanguage, and sumServer
     """
-    sumUrl(**kwargs)
-    sumRemote(**kwargs)
-    sumUserAgent(**kwargs)
-    sumLanguage(**kwargs)
-    sumServer(**kwargs)
+    def __init__(self, **kwargs):
+        self.init_kwargs = kwargs
+        _set_up("sumUrl", **kwargs)
+        _set_up("sumRemote", **kwargs)
+        _set_up("sumUserAgent", **kwargs)
+        _set_up("sumLanguage", **kwargs)
+        _set_up("sumServer", **kwargs)
+        return
+
+    def __call__(self, **kwargs):
+        _caller("sumUrl", **kwargs)
+        _caller("sumRemote", **kwargs)
+        _caller("sumUserAgent", **kwargs)
+        _caller("sumLanguage", **kwargs)
+        _caller("sumServer", **kwargs)
