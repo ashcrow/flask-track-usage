@@ -32,7 +32,6 @@ def _set_up(sum_name, **kwargs):
     method(**kwargs)
 
 
-
 def _caller(method_name, **kwargs):
     if "_parent_class_name" not in kwargs:
         raise NotImplementedError(
@@ -141,7 +140,7 @@ class sumVisitor(object):
         _caller("sumVisitor", **kwargs)
 
 
-#TBD
+# TBD
 class sumGeo(object):
     """
     Traffic is summarized for the tracked geographies of remote IPs seen by the
