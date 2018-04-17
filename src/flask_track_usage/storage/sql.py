@@ -54,7 +54,7 @@ class SQLStorage(Storage):
     """
 
     def set_up(self, engine=None, metadata=None, table_name="flask_usage",
-               db=None):
+               db=None, hooks=None):
         """
         Sets the SQLAlchemy database. There are two ways to initialize the
         SQLStorage: 1) by passing the SQLAlchemy `engine` and `metadata`

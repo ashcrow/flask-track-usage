@@ -223,3 +223,85 @@ class TestMongoEngineSummarizeBasic(FlaskTrackUsageTestCase):
         assert month_doc.hits == 1
         assert month_doc.transfer > 1
 
+
+@unittest.skipUnless(HAS_MONGOENGINE, "Requires MongoEngine")
+class TestMongoEngineSummarizeGetSum(FlaskTrackUsageTestCase):
+    """
+    Tests query of MongoEngine summaries.
+    """
+
+    def setUp(self):
+        """
+        Set up an app to test with.
+        """
+        self.fake_time1  = datetime.datetime(2018, 04, 15, 8, 45, 12)  # Apr 15, 2018 at 8:45:12 AM UTC
+        self.fake_hour1  = datetime.datetime(2018, 04, 15, 8,  0,  0)  # Apr 15, 2018 at 8:00:00 AM UTC
+        self.fake_day1   = datetime.datetime(2018, 04, 15, 0,  0,  0)  # Apr 15, 2018 at 0:00:00 AM UTC
+        self.fake_month1 = datetime.datetime(2018, 04,  1, 0,  0,  0)  # Apr  1, 2018 at 0:00:00 AM UTC
+
+        self.fake_time2  = datetime.datetime(2018, 04, 15, 9, 45, 12)  # Apr 15, 2018 at 9:45:12 AM UTC
+        self.fake_hour2  = datetime.datetime(2018, 04, 15, 9,  0,  0)  # Apr 15, 2018 at 9:00:00 AM UTC
+        self.fake_day2   = datetime.datetime(2018, 04, 15, 0,  0,  0)  # Apr 15, 2018 at 0:00:00 AM UTC
+        self.fake_month2 = datetime.datetime(2018, 04,  1, 0,  0,  0)  # Apr  1, 2018 at 0:00:00 AM UTC
+
+        self.fake_time3  = datetime.datetime(2018, 04, 16, 9, 45, 12)  # Apr 16, 2018 at 9:45:12 AM UTC
+        self.fake_hour3  = datetime.datetime(2018, 04, 16, 9,  0,  0)  # Apr 16, 2018 at 9:00:00 AM UTC
+        self.fake_day3   = datetime.datetime(2018, 04, 16, 0,  0,  0)  # Apr 16, 2018 at 0:00:00 AM UTC
+        self.fake_month3 = datetime.datetime(2018, 04,  1, 0,  0,  0)  # Apr  1, 2018 at 0:00:00 AM UTC
+
+        self.fake_time4  = datetime.datetime(2018, 05, 10, 9, 45, 12)  # May 10, 2018 at 9:45:12 AM UTC
+        self.fake_hour4  = datetime.datetime(2018, 05, 10, 9,  0,  0)  # May 10, 2018 at 9:00:00 AM UTC
+        self.fake_day4   = datetime.datetime(2018, 05, 10, 0,  0,  0)  # May 10, 2018 at 0:00:00 AM UTC
+        self.fake_month4 = datetime.datetime(2018, 05,  1, 0,  0,  0)  # May  1, 2018 at 0:00:00 AM UTC
+
+        FlaskTrackUsageTestCase.setUp(self)
+        self.storage = MongoEngineStorage(hooks=[
+            sumUrl,
+            sumRemote,
+            sumUserAgent,
+            sumLanguage,
+            sumServer
+        ])
+        self.track_usage = TrackUsage(
+            self.app,
+            self.storage,
+            _fake_time = self.fake_time1
+        )
+        # Clean out the summary
+        UsageTrackerSumUrlHourly.drop_collection()
+        UsageTrackerSumUrlDaily.drop_collection()
+        UsageTrackerSumUrlMonthly.drop_collection()
+        UsageTrackerSumRemoteHourly.drop_collection()
+        UsageTrackerSumRemoteDaily.drop_collection()
+        UsageTrackerSumRemoteMonthly.drop_collection()
+        UsageTrackerSumUserAgentHourly.drop_collection()
+        UsageTrackerSumUserAgentDaily.drop_collection()
+        UsageTrackerSumUserAgentMonthly.drop_collection()
+        UsageTrackerSumLanguageHourly.drop_collection()
+        UsageTrackerSumLanguageDaily.drop_collection()
+        UsageTrackerSumLanguageMonthly.drop_collection()
+        UsageTrackerSumServerHourly.drop_collection()
+        UsageTrackerSumServerDaily.drop_collection()
+        UsageTrackerSumServerMonthly.drop_collection()
+
+        # generate four entries at different times
+        #
+        self.client.get('/')
+        self.track_usage._fake_time = self.fake_time2
+        self.client.get('/')
+        self.track_usage._fake_time = self.fake_time3
+        self.client.get('/')
+        self.track_usage._fake_time = self.fake_time4
+        self.client.get('/')
+
+    def test_mongoengine_get_summary_url(self):
+        """
+        Test MongoEngine url summarization.
+        """
+        result = self.storage.get_sum(sumUrl, start_date=self.fake_time1)
+        print(len(result["month"]))
+        assert len(result["hour"]) == 4
+        assert len(result["day"]) == 3
+        assert len(result["month"]) == 2
+
+        # add more here

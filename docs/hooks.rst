@@ -85,25 +85,3 @@ sumGeo -- physical country of remote IPs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Traffic is summarized for the tracked geographies of remote IPs seen by the Flask server. For this to properly function, the optional TRACK_USAGE_FREEGEOIP config must be enabled. While the geography function provides a great deal of information, only the country is used for this summarization.
-
-
-sumBasic -- shortcut basic 5 summaries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-A shortcut that, in turn, calls sumUrls, sumRemotes, sumUserAgents, sumLanguages, and sumServer.
-
-WARNING: do not call both sumBasic and one of the five basic summaries. Doing so will likely cause duplicate counting. So, for example, don't call both "sumBasic" and "sumServer".
-
-How to Write Your Own Hooks
----------------------------
-
-To write your own hook....
-
-How to Add Hooks to the Library
--------------------------------
-
-To add to the hooks to the Flask-Track-Usage library, add the "stub" code file seen in the "summarization" directory along with the reference to in in the "__init__.py" file. See existing code for examples.
-
-Each "stub" has the sole purpose of looking for the corresponding method in the in it's calling class. So, if you write a summary function called "sumMyNewThing" it will look for a "sumMyNewThing" method in the Storage class it is associated with.
-
-Not every storage class supports every summary function, so it is critical that each storage class fail gracefully and simply skip any methods not found.

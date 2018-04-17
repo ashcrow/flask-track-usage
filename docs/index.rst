@@ -1,7 +1,7 @@
 Flask-Track-Usage |release|
 ===========================
 
-Basic metrics tracking for your `Flask`_ application. The core of library is very light and focuses more on storing basic metrics such as remote ip address and user agent.
+Basic metrics tracking for your `Flask`_ application. The core of library is very light and focuses more on storing basic metrics such as remote ip address and user agent.  No extra cookies or javascript are used for usage tracking.
 
 * Simple. It's a Flask extension.
 * Supports either include or exempt for views.

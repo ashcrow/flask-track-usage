@@ -96,6 +96,33 @@ else:
         increment(sumUrlClasses, src, "url", ["url"])
         return
 
+    def sumUrl_get_sum(
+            start_date=None,
+            end_date=None,
+            limit=500,
+            page=1,
+            _parent_class_name = None,
+            _parent_self = None
+        ):
+        # note: for mongoegine, we can ignore _parent* parms as the module
+        # is global
+        final = {}
+        query = {}
+        if start_date:
+            query["date__gte"] = start_date
+        if end_date:
+            query["date__lte"] = end_date
+        for period in sumUrlClasses.keys():
+            if limit:
+                first = limit * (page - 1)
+                last = limit * page
+                logs = sumUrlClasses[period].objects(
+                    **query
+                ).order_by('-date')[first:last]
+            else:
+                logs = sumUrlClasses[period].objects(**query).order_by('-date')
+            final[period] = [log.to_mongo().to_dict() for log in logs]
+        return final
 
 ######################################################
 #

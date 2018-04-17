@@ -33,6 +33,7 @@ Simple mongodb storage.
 """
 
 import datetime
+import inspect
 
 from flask_track_usage.storage import Storage
 
@@ -99,7 +100,7 @@ class MongoPiggybackStorage(_MongoStorage):
     Uses a pymongo collection to store data.
     """
 
-    def set_up(self, collection):
+    def set_up(self, collection, hooks=None):
         """
         Sets the collection.
 
@@ -116,7 +117,7 @@ class MongoStorage(_MongoStorage):
 
     def set_up(
             self, database, collection, host='127.0.0.1',
-            port=27017, username=None, password=None):
+            port=27017, username=None, password=None, hooks=None):
         """
         Sets the collection.
 
@@ -148,7 +149,7 @@ class MongoEngineStorage(_MongoStorage):
     trackerDoc = MongoEngineStorage().collection
     """
 
-    def set_up(self, doc=None, website=None, apache_log=False):
+    def set_up(self, doc=None, website=None, apache_log=False, hooks=None):
         import mongoengine as db
         """
         Sets the general settings.
@@ -266,9 +267,40 @@ class MongoEngineStorage(_MongoStorage):
         if limit:
             first = limit * (page - 1)
             last = limit * page
-            logs = self.collection.objects(**query)\
-                .order_by('-date')[first:last]
+            logs = self.collection.objects(
+                **query
+            ).order_by('-date')[first:last]
         else:
             logs = self.collection.objects(**query).order_by('-date')
         result = [log.to_mongo().to_dict() for log in logs]
         return result
+
+
+    def get_sum(self, hook, start_date=None, end_date=None, limit=500, page=1):
+        """
+        Queries a subtending hook for summarization data.
+
+        :Parameters:
+           - 'hook': the hook 'class' or it's name as a string
+           - `start_date`: datetime.datetime representation of starting date
+           - `end_date`: datetime.datetime representation of ending date
+           - `limit`: The max amount of results to return
+           - `page`: Result page number limited by `limit` number in a page
+
+        .. versionchanged:: 2.0.0
+        """
+        if inspect.isclass(hook):
+            hook_name = hook.__name__
+        else:
+            hook_name = str(hook)
+        for h in self._post_storage_hooks:
+            if h.__class__.__name__ == hook_name:
+                return h.get_sum(
+                    start_date=None,
+                    end_date=None,
+                    limit=500,
+                    page=1,
+                    _parent_class_name = self.__class__.__name__,
+                    _parent_self = self
+                )
+        raise NotImplementedError('Cannot find hook named "{}"'.format(hook_name))

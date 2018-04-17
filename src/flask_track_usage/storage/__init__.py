@@ -49,11 +49,11 @@ class _BaseWritable(object):
            - `args`: All non-keyword arguments.
            - `kwargs`: All keyword arguments.
         """
-        if "hooks" in kwargs:
-            self._temp_hooks = kwargs["hooks"]
-            del kwargs["hooks"]
-        else:
-            self._temp_hooks = []
+        # if "hooks" in kwargs:
+        #     self._temp_hooks = kwargs["hooks"]
+        #     del kwargs["hooks"]
+        # else:
+        #     self._temp_hooks = []
         #
         self.set_up(*args, **kwargs)
         #
@@ -61,11 +61,14 @@ class _BaseWritable(object):
         kwargs["_parent_class_name"] = self.__class__.__name__
         kwargs['_parent_self'] = self
         self._post_storage_hooks = []
-        for hook in self._temp_hooks:
+        for hook in kwargs.get("hooks", []):
             if inspect.isclass(hook):
                 self._post_storage_hooks.append(hook(**kwargs))
             else:
                 self._post_storage_hooks.append(hook)
+        # call setup for each hook
+        for hook in self._post_storage_hooks:
+            hook.set_up(**kwargs)
         self._temp_hooks = None
 
     def set_up(self, *args, **kwargs):
@@ -91,6 +94,21 @@ class _BaseWritable(object):
         """
         raise NotImplementedError('store must be implemented.')
 
+    def get_sum(self, hook, start_date=None, end_date=None, limit=500, page=1):
+        """
+        Queries a subtending hook for summarization data. Can be overridden.
+
+        :Parameters:
+           - 'hook': the hook 'class' or it's name as a string
+           - `start_date`: datetime.datetime representation of starting date
+           - `end_date`: datetime.datetime representation of ending date
+           - `limit`: The max amount of results to return
+           - `page`: Result page number limited by `limit` number in a page
+
+        .. versionchanged:: 2.0.0
+        """
+        pass
+
     def __call__(self, data):
         """
         Maps function call to store.
@@ -98,13 +116,12 @@ class _BaseWritable(object):
         :Parameters:
            - `data`: Data to store.
         """
-        result = self.store(data)
+        self.store(data)
         data["_parent_class_name"] = self.__class__.__name__
         data['_parent_self'] = self
         for hook in self._post_storage_hooks:
-            hook(**result)
-        return result
-        # return self.store(data)
+            hook(**data)
+        return data
 
 
 class Writer(_BaseWritable):
