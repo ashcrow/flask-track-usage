@@ -303,7 +303,7 @@ class MongoEngineStorage(_MongoStorage):
         else:
             hook_name = str(hook)
         for h in self._post_storage_hooks:
-            if h.__class__.__name__==hook_name:
+            if h.__class__.__name__ == hook_name:
                 return h.get_sum(
                     start_date=start_date,
                     end_date=end_date,

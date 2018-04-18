@@ -45,6 +45,7 @@ def increment(class_dict, src, dest, target_list):
         doc.transfer += src.content_length
         doc.save()
 
+
 def generic_get_sum(
         class_dict,
         key,
@@ -53,14 +54,14 @@ def generic_get_sum(
         limit=500,
         page=1,
         target=None,
-        _parent_class_name = None,
-        _parent_self = None
-    ):
+        _parent_class_name=None,
+        _parent_self=None
+):
     # note: for mongoegine, we can ignore _parent* parms as the module
     # is global
     final = {}
     query = {}
-    if start_date and not end_date:  
+    if start_date and not end_date:
         normal_startstop = trim_times_dict(start_date)
     else:
         if start_date:
@@ -70,7 +71,7 @@ def generic_get_sum(
     if target is not None:
         query[key] = target
     for period in class_dict.keys():
-        if start_date and not end_date:  
+        if start_date and not end_date:
             query["date"] = normal_startstop[period]
         if limit:
             first = limit * (page - 1)
