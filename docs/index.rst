@@ -1,16 +1,22 @@
 Flask-Track-Usage |release|
 ===========================
 
-Basic metrics tracking for your `Flask`_ application. This focuses more on ip addresses/locations rather than tracking specific users pathing through an application. No extra cookies or javascript is used for usage tracking.
+Basic metrics tracking for your `Flask`_ application. The core of library is very light and focuses more on storing basic metrics such as remote ip address and user agent.  No extra cookies or javascript are used for usage tracking.
 
 * Simple. It's a Flask extension.
 * Supports either include or exempt for views.
 * Provides lite abstraction for data retrieval.
-* Optional `freegeoip.net <http://freegeoip.net/>`_ integration including custom freegeoip installs.
 * Multiple storage options available.
 * Multiple storage options can be used.
 * Pluggable functionality for storage instances.
 * Supports Python 2.7 and 3+.
+
+The following is optional:
+
+* `freegeoip.net <http://freegeoip.net/>`_ integration for storing geography of the visitor.
+* Unique visitor tracking if you are wanting to use Flask's cookie storage.
+* Summation hooks for live count of common web analysis statistics such as hit counts.
+
 
 .. _Flask: http://flask.pocoo.org/
 
@@ -59,11 +65,10 @@ Usage
     from flask_track_usage.storage.output import OutputWriter
 
     # Make an instance of the extension and put two writers
-    t = TrackUsage(app, [PrintWriter(), OutputWriter(
-        transform=lambda s: "OUTPUT: " + str(s))])
-
-    # Make an instance of the extension
-    t = TrackUsage(app, storage)
+    t = TrackUsage(app, [
+        PrintWriter(),
+        OutputWriter(transform=lambda s: "OUTPUT: " + str(s))
+    ])
 
     # Include the view in the metrics
     @t.include
@@ -87,7 +92,7 @@ Include
     app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
 
     # Make an instance of the extension
-    t = TrackUsage(app, PrintStorage())
+    t = TrackUsage(app, [PrintWriter()])
 
     from my_blueprints import a_bluprint
 
@@ -103,7 +108,7 @@ Exclude
     app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'exclude'
 
     # Make an instance of the extension
-    t = TrackUsage(app, PrintStorage())
+    t = TrackUsage(app, [PrintWriter()])
 
     from my_blueprints import a_bluprint
 
@@ -120,14 +125,15 @@ TRACK_USAGE_USE_FREEGEOIP
 
 **Default**: False
 
+Turn FreeGeoIP integration on or off. If set to true, then geography information is also stored in the usage logs.
+
 TRACK_USAGE_FREEGEOIP_ENDPOINT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Values**: URL
 
 **Default**: http://freegeoip.net/json/
 
-
-Turn FreeGeoIP integration on or off
+Set the URL prefix used to map the remote IP address of each request to a geography. The service must return a JSON response.
 
 TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -140,9 +146,17 @@ If views should be included or excluded by default.
 * When set to *exclude* each routed view must be explicitly included via decorator or blueprint include method. If a routed view is not included it will not be tracked.
 * When set to *include* each routed view must be explicitly excluded via decorator or blueprint exclude method. If a routed view is not excluded it will be tracked.
 
+TRACK_USAGE_COOKIE
+~~~~~~~~~~~~~~~~~~
+**Values**: True, False
+
+**Default**: False
+
+Turn on unique visitor tracking via cookie on or off. If True, then the unique visitor ID (a quasi-random number) is also stored in the usage logs.
+
 Storage
 -------
-The following are built in, ready to use storage backends.
+The following are built-in, ready-to-use storage backends.
 
 .. note:: Inputs for set_up should be passed in __init__ when creating a storage instance
 
@@ -198,8 +212,8 @@ sql.SQLStorage
     :members:
     :inherited-members:
 
-Retrieving Data
----------------
+Retrieving Log Data
+-------------------
 All storage backends, other than printer.PrintStorage, provide get_usage.
 
 .. autoclass:: flask_track_usage.storage.Storage
@@ -236,3 +250,36 @@ Results that are returned from all instances of get_usage should **always** look
 
 .. versionchanged:: 1.1.0
    xforwardfor item added directly after remote_addr
+
+Hooks
+-----
+The basic function of the library simply logs on unit of information per request received. This keeps it simple and light.
+
+However, you can also add post-storage "hooks" that are called after the individual log is stored. In theory, anything could be triggered after the storage.
+
+.. code-block:: python
+
+    # ...
+    def helloWorld(*kwargs):
+        print "hello world!"
+
+    # Make an instance of the extension
+    t = TrackUsage(app, [PrintWriter(hooks=[helloWorld])])
+
+In this example, the helloWorld function would be called once each time PrintWriters output is invoked. The keyword parameters are those found in the `Retrieving Log Data`_ function. (see above) Some Storages/Writers also add more keys.
+
+This library has a list of standardized hooks that are used for log summarizing. They are documented in detail here:
+
+:doc:`hooks`
+  Standard Summarization Hooks
+
+Not all Stores support all of these hooks. See the details for more information. Usage is fairly straightforward:
+
+.. code-block:: python
+
+    from flask.ext.track_usage import TrackUsage
+    from flask.ext.track_usage.storage.mongo import MongoEngineStorage
+    from flask.ext.track_usage.summarization import sumBasic
+
+    t = TrackUsage(app, [MongoEngineStorage(hooks=[sumBasic])])
+

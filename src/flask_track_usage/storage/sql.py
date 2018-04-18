@@ -54,7 +54,7 @@ class SQLStorage(Storage):
     """
 
     def set_up(self, engine=None, metadata=None, table_name="flask_usage",
-               db=None):
+               db=None, hooks=None):
         """
         Sets the SQLAlchemy database. There are two ways to initialize the
         SQLStorage: 1) by passing the SQLAlchemy `engine` and `metadata`
@@ -65,13 +65,16 @@ class SQLStorage(Storage):
            - `engine`: The SQLAlchemy engine object
            - `metadata`: The SQLAlchemy MetaData object
            - `table_name`: Table name for storing the analytics. Defaults to \
-                           `flask_usage`.
+                           `flask_usage`. Summary tables use this name as a \
+                           prefix to their name.
            - `db`: Instead of providing the engine, one can optionally
                    provide the Flask-SQLAlchemy's SQLALchemy object created as
                    SQLAlchemy(app).
 
         .. versionchanged:: 1.1.0
            xforwardfor column added directly after remote_addr
+        .. versionchanged:: 2.0.0
+           added summary tables
         """
 
         import sqlalchemy as sql
@@ -83,6 +86,8 @@ class SQLStorage(Storage):
                 raise ValueError("Both db and engine args cannot be None")
             self._eng = engine
             self._metadata = metadata or sql.MetaData()
+        self.table_name = table_name
+        self.sum_tables = {}
         self._con = None
         with self._eng.begin() as self._con:
             if not self._con.dialect.has_table(self._con, table_name):
@@ -140,6 +145,7 @@ class SQLStorage(Storage):
                 datetime=utcdatetime
             )
             con.execute(stmt)
+        return data
 
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """
