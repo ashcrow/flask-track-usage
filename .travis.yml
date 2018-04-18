@@ -14,3 +14,5 @@ script:
   - nosetests --with-coverage --cover-package=flask_track_usage --cover-min-percentage=80 -v test/*.py
 notifications:
   email: false
+addons:
+  postgresql: "9.5"

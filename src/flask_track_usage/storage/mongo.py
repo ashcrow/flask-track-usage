@@ -33,6 +33,7 @@ Simple mongodb storage.
 """
 
 import datetime
+import inspect
 
 from flask_track_usage.storage import Storage
 
@@ -99,7 +100,7 @@ class MongoPiggybackStorage(_MongoStorage):
     Uses a pymongo collection to store data.
     """
 
-    def set_up(self, collection):
+    def set_up(self, collection, hooks=None):
         """
         Sets the collection.
 
@@ -116,7 +117,7 @@ class MongoStorage(_MongoStorage):
 
     def set_up(
             self, database, collection, host='127.0.0.1',
-            port=27017, username=None, password=None):
+            port=27017, username=None, password=None, hooks=None):
         """
         Sets the collection.
 
@@ -148,7 +149,7 @@ class MongoEngineStorage(_MongoStorage):
     trackerDoc = MongoEngineStorage().collection
     """
 
-    def set_up(self, doc=None, website=None, apache_log=False):
+    def set_up(self, doc=None, website=None, apache_log=False, hooks=None):
         import mongoengine as db
         """
         Sets the general settings.
@@ -169,13 +170,15 @@ class MongoEngineStorage(_MongoStorage):
             language = db.StringField()
             platform = db.StringField()
             version = db.StringField()
+            string = db.StringField()
 
         class UsageTracker(db.Document):
             date = db.DateTimeField(
                 required=True,
-                default=datetime.datetime.now
+                default=datetime.datetime.utcnow
             )
             website = db.StringField(required=True, default="default")
+            server_name = db.StringField(default="self")
             blueprint = db.StringField(default=None)
             view_args = db.DictField()
             ip_info = db.StringField()
@@ -204,6 +207,7 @@ class MongoEngineStorage(_MongoStorage):
         doc = self.collection()
         doc.date = datetime.datetime.fromtimestamp(data['date'])
         doc.website = self.website
+        doc.server_name = data['server_name']
         doc.blueprint = data['blueprint']
         doc.view_args = data['view_args']
         doc.ip_info = data['ip_info']
@@ -225,6 +229,7 @@ class MongoEngineStorage(_MongoStorage):
         ua.platform = data['user_agent'].platform
         if data['user_agent'].version:
             ua.version = str(data['user_agent'].version)
+        ua.string = data['user_agent'].string
         doc.user_agent = ua
         if self.apache_log:
             t = '{h} - {u} [{t}] "{r}" {s} {b} "{ref}" "{ua}"'.format(
@@ -239,7 +244,8 @@ class MongoEngineStorage(_MongoStorage):
             )
             doc.apache_combined_log = t
         doc.save()
-        return doc
+        data['mongoengine_document'] = doc
+        return data
 
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """
@@ -261,8 +267,52 @@ class MongoEngineStorage(_MongoStorage):
         if limit:
             first = limit * (page - 1)
             last = limit * page
-            logs = self.collection.objects(**query)[first:last]
+            logs = self.collection.objects(
+                **query
+            ).order_by('-date')[first:last]
         else:
-            logs = self.collection.objects(**query)
+            logs = self.collection.objects(**query).order_by('-date')
         result = [log.to_mongo().to_dict() for log in logs]
         return result
+
+    def get_sum(
+        self,
+        hook,
+        start_date=None,
+        end_date=None,
+        limit=500,
+        page=1,
+        target=None
+    ):
+        """
+        Queries a subtending hook for summarization data.
+
+        :Parameters:
+           - 'hook': the hook 'class' or it's name as a string
+           - `start_date`: datetime.datetime representation of starting date
+           - `end_date`: datetime.datetime representation of ending date
+           - `limit`: The max amount of results to return
+           - `page`: Result page number limited by `limit` number in a page
+           - 'target': search string to limit results; meaning depend on hook
+
+
+        .. versionchanged:: 2.0.0
+        """
+        if inspect.isclass(hook):
+            hook_name = hook.__name__
+        else:
+            hook_name = str(hook)
+        for h in self._post_storage_hooks:
+            if h.__class__.__name__ == hook_name:
+                return h.get_sum(
+                    start_date=start_date,
+                    end_date=end_date,
+                    limit=limit,
+                    page=page,
+                    target=target,
+                    _parent_class_name=self.__class__.__name__,
+                    _parent_self=self
+                )
+        raise NotImplementedError(
+            'Cannot find hook named "{}"'.format(hook_name)
+        )
