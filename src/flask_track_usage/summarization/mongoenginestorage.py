@@ -258,7 +258,11 @@ else:
         return
 
     def sumUserAgent_get_sum(**kwargs):
-        return generic_get_sum(sumUserAgentClasses, "user_agent_string", **kwargs)
+        return generic_get_sum(
+            sumUserAgentClasses,
+            "user_agent_string",
+            **kwargs
+        )
 
 ######################################################
 #

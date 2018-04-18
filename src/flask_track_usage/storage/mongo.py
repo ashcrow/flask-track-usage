@@ -275,7 +275,6 @@ class MongoEngineStorage(_MongoStorage):
         result = [log.to_mongo().to_dict() for log in logs]
         return result
 
-
     def get_sum(
         self,
         hook,
@@ -304,14 +303,16 @@ class MongoEngineStorage(_MongoStorage):
         else:
             hook_name = str(hook)
         for h in self._post_storage_hooks:
-            if h.__class__.__name__ == hook_name:
+            if h.__class__.__name__==hook_name:
                 return h.get_sum(
                     start_date=start_date,
                     end_date=end_date,
                     limit=limit,
                     page=page,
                     target=target,
-                    _parent_class_name = self.__class__.__name__,
-                    _parent_self = self
+                    _parent_class_name=self.__class__.__name__,
+                    _parent_self=self
                 )
-        raise NotImplementedError('Cannot find hook named "{}"'.format(hook_name))
+        raise NotImplementedError(
+            'Cannot find hook named "{}"'.format(hook_name)
+        )

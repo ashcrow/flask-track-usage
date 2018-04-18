@@ -72,7 +72,9 @@ def _get_sum(sum_name, **kwargs):
         method = getattr(library, method_name)
     except AttributeError:
         raise NotImplementedError(
-            '{}.get_sum missing for this Storage class.'.format(sum_name, method_name)
+            '{}.get_sum missing for this Storage class.'.format(
+                sum_name, method_name
+            )
         )
     return method(**kwargs)
 
@@ -177,7 +179,8 @@ class sumServer(object):
 # # TBD
 # class sumVisitor(object):
 #     """
-#     Traffic is summarized for each unique visitor of the Flask server. For this
+#     Traffic is summarized for each unique visitor of the Flask server. For
+#     this
 #     to function, the optional TRACK_USAGE_COOKIE function must be enabled in
 #     config.
 
@@ -197,9 +200,11 @@ class sumServer(object):
 # # TBD
 # class sumGeo(object):
 #     """
-#     Traffic is summarized for the tracked geographies of remote IPs seen by the
+#     Traffic is summarized for the tracked geographies of remote IPs seen by
+#     the
 #     Flask server. For this to properly function, the optional
-#     TRACK_USAGE_FREEGEOIP config must be enabled. While the geography function
+#     TRACK_USAGE_FREEGEOIP config must be enabled. While the geography
+#     function
 #     provides a great deal of information, only the country is used for this
 #     summarization.
 #     """
