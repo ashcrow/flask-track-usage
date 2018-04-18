@@ -21,9 +21,13 @@ def trim_times(date):
     return hour, day, month
 
 
+def trim_times_dict(date):
+    h, d, m = trim_times(date)
+    return {"hour": h, "day": d, "month": m}
+
+
 def increment(class_dict, src, dest, target_list):
-    times = {}
-    times["hour"], times["day"], times["month"] = trim_times(src.date)
+    times = trim_times_dict(src.date)
     db_args = {}
     if dest:
         value = src
@@ -40,6 +44,44 @@ def increment(class_dict, src, dest, target_list):
         doc.hits += 1
         doc.transfer += src.content_length
         doc.save()
+
+def generic_get_sum(
+        class_dict,
+        key,
+        start_date=None,
+        end_date=None,
+        limit=500,
+        page=1,
+        target=None,
+        _parent_class_name = None,
+        _parent_self = None
+    ):
+    # note: for mongoegine, we can ignore _parent* parms as the module
+    # is global
+    final = {}
+    query = {}
+    if start_date and not end_date:  
+        normal_startstop = trim_times_dict(start_date)
+    else:
+        if start_date:
+            query["date__gte"] = start_date
+        if end_date:
+            query["date__lte"] = end_date
+    if target is not None:
+        query[key] = target
+    for period in class_dict.keys():
+        if start_date and not end_date:  
+            query["date"] = normal_startstop[period]
+        if limit:
+            first = limit * (page - 1)
+            last = limit * page
+            logs = class_dict[period].objects(
+                **query
+            ).order_by('-date')[first:last]
+        else:
+            logs = class_dict[period].objects(**query).order_by('-date')
+        final[period] = [log.to_mongo().to_dict() for log in logs]
+    return final
 
 
 ######################################################
@@ -96,33 +138,8 @@ else:
         increment(sumUrlClasses, src, "url", ["url"])
         return
 
-    def sumUrl_get_sum(
-            start_date=None,
-            end_date=None,
-            limit=500,
-            page=1,
-            _parent_class_name = None,
-            _parent_self = None
-        ):
-        # note: for mongoegine, we can ignore _parent* parms as the module
-        # is global
-        final = {}
-        query = {}
-        if start_date:
-            query["date__gte"] = start_date
-        if end_date:
-            query["date__lte"] = end_date
-        for period in sumUrlClasses.keys():
-            if limit:
-                first = limit * (page - 1)
-                last = limit * page
-                logs = sumUrlClasses[period].objects(
-                    **query
-                ).order_by('-date')[first:last]
-            else:
-                logs = sumUrlClasses[period].objects(**query).order_by('-date')
-            final[period] = [log.to_mongo().to_dict() for log in logs]
-        return final
+    def sumUrl_get_sum(**kwargs):
+        return generic_get_sum(sumUrlClasses, "url", **kwargs)
 
 ######################################################
 #
@@ -178,6 +195,8 @@ else:
         increment(sumRemoteClasses, src, "remote_addr", ["remote_addr"])
         return
 
+    def sumRemote_get_sum(**kwargs):
+        return generic_get_sum(sumRemoteClasses, "remote_addr", **kwargs)
 
 ######################################################
 #
@@ -237,6 +256,9 @@ else:
             ["user_agent", "string"]
         )
         return
+
+    def sumUserAgent_get_sum(**kwargs):
+        return generic_get_sum(sumUserAgentClasses, "user_agent_string", **kwargs)
 
 ######################################################
 #
@@ -299,6 +321,8 @@ else:
         )
         return
 
+    def sumLanguage_get_sum(**kwargs):
+        return generic_get_sum(sumLanguageClasses, "language", **kwargs)
 
 ######################################################
 #
@@ -353,3 +377,6 @@ else:
         #
         increment(sumServerClasses, src, "server_name", ["server_name"])
         return
+
+    def sumServer_get_sum(**kwargs):
+        return generic_get_sum(sumServerClasses, "server_name", **kwargs)

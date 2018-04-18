@@ -276,7 +276,15 @@ class MongoEngineStorage(_MongoStorage):
         return result
 
 
-    def get_sum(self, hook, start_date=None, end_date=None, limit=500, page=1):
+    def get_sum(
+        self,
+        hook,
+        start_date=None,
+        end_date=None,
+        limit=500,
+        page=1,
+        target=None
+    ):
         """
         Queries a subtending hook for summarization data.
 
@@ -286,6 +294,8 @@ class MongoEngineStorage(_MongoStorage):
            - `end_date`: datetime.datetime representation of ending date
            - `limit`: The max amount of results to return
            - `page`: Result page number limited by `limit` number in a page
+           - 'target': search string to limit results; meaning depend on hook
+
 
         .. versionchanged:: 2.0.0
         """
@@ -296,10 +306,11 @@ class MongoEngineStorage(_MongoStorage):
         for h in self._post_storage_hooks:
             if h.__class__.__name__ == hook_name:
                 return h.get_sum(
-                    start_date=None,
-                    end_date=None,
-                    limit=500,
-                    page=1,
+                    start_date=start_date,
+                    end_date=end_date,
+                    limit=limit,
+                    page=page,
+                    target=target,
                     _parent_class_name = self.__class__.__name__,
                     _parent_self = self
                 )

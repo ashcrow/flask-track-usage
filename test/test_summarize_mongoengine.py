@@ -34,12 +34,14 @@ Tests mongodb based storage.
 
 import datetime
 import unittest
+import json
 
 
 HAS_MONGOENGINE = False
 
 try:
     import mongoengine
+    import pprint
     HAS_MONGOENGINE = True
     try:
         mongoengine.connect(db="mongoenginetest")
@@ -298,10 +300,137 @@ class TestMongoEngineSummarizeGetSum(FlaskTrackUsageTestCase):
         """
         Test MongoEngine url summarization.
         """
-        result = self.storage.get_sum(sumUrl, start_date=self.fake_time1)
-        print(len(result["month"]))
-        assert len(result["hour"]) == 4
-        assert len(result["day"]) == 3
-        assert len(result["month"]) == 2
+        result = self.storage.get_sum(
+            sumUrl,
+            start_date=self.fake_hour1,
+            target='http://localhost/'
+        )
+        # print(pprint.pprint(result))
+        assert len(result["hour"]) == 1
+        assert len(result["day"]) == 1
+        assert len(result["month"]) == 1
+        assert result["hour"][0]['hits'] == 1
+        assert result["day"][0]['hits'] == 2
+        assert result["month"][0]['hits'] == 3
 
-        # add more here
+        result = self.storage.get_sum(
+            "sumUrl",
+            start_date=self.fake_hour4,
+        )
+        assert len(result["hour"]) == 1
+        assert len(result["day"]) == 1
+        assert len(result["month"]) == 1
+        assert result["hour"][0]['hits'] == 1
+        assert result["day"][0]['hits'] == 1
+        assert result["month"][0]['hits'] == 1
+
+    def test_mongoengine_get_summary_remote(self):
+        """
+        Test MongoEngine url summarization.
+        """
+        result = self.storage.get_sum(
+            sumRemote,
+            start_date=self.fake_hour1,
+            target='127.0.0.1'
+        )
+        # print(pprint.pprint(result))
+        assert len(result["hour"]) == 1
+        assert len(result["day"]) == 1
+        assert len(result["month"]) == 1
+        assert result["hour"][0]['hits'] == 1
+        assert result["day"][0]['hits'] == 2
+        assert result["month"][0]['hits'] == 3
+
+        result = self.storage.get_sum(
+            "sumRemote",
+            start_date=self.fake_hour4,
+        )
+        assert len(result["hour"]) == 1
+        assert len(result["day"]) == 1
+        assert len(result["month"]) == 1
+        assert result["hour"][0]['hits'] == 1
+        assert result["day"][0]['hits'] == 1
+        assert result["month"][0]['hits'] == 1
+
+    def test_mongoengine_get_summary_useragent(self):
+        """
+        Test MongoEngine url summarization.
+        """
+        result = self.storage.get_sum(
+            sumUserAgent,
+            start_date=self.fake_hour1
+        )
+        # print(pprint.pprint(result))
+        assert len(result["hour"]) == 1
+        assert len(result["day"]) == 1
+        assert len(result["month"]) == 1
+        assert result["hour"][0]['hits'] == 1
+        assert result["day"][0]['hits'] == 2
+        assert result["month"][0]['hits'] == 3
+
+        result = self.storage.get_sum(
+            "sumUserAgent",
+            start_date=self.fake_hour4,
+        )
+        assert len(result["hour"]) == 1
+        assert len(result["day"]) == 1
+        assert len(result["month"]) == 1
+        assert result["hour"][0]['hits'] == 1
+        assert result["day"][0]['hits'] == 1
+        assert result["month"][0]['hits'] == 1
+
+    def test_mongoengine_get_summary_language(self):
+        """
+        Test MongoEngine url summarization.
+        """
+        result = self.storage.get_sum(
+            sumLanguage,
+            start_date=self.fake_hour1,
+            target="none"
+        )
+        # print(pprint.pprint(result))
+        assert len(result["hour"]) == 1
+        assert len(result["day"]) == 1
+        assert len(result["month"]) == 1
+        assert result["hour"][0]['hits'] == 1
+        assert result["day"][0]['hits'] == 2
+        assert result["month"][0]['hits'] == 3
+
+        result = self.storage.get_sum(
+            "sumLanguage",
+            start_date=self.fake_hour4,
+        )
+        assert len(result["hour"]) == 1
+        assert len(result["day"]) == 1
+        assert len(result["month"]) == 1
+        assert result["hour"][0]['hits'] == 1
+        assert result["day"][0]['hits'] == 1
+        assert result["month"][0]['hits'] == 1
+
+    def test_mongoengine_get_summary_server(self):
+        """
+        Test MongoEngine url summarization.
+        """
+        result = self.storage.get_sum(
+            sumServer,
+            start_date=self.fake_hour1,
+            target=self.app.name
+        )
+        # print(pprint.pprint(result))
+        assert len(result["hour"]) == 1
+        assert len(result["day"]) == 1
+        assert len(result["month"]) == 1
+        assert result["hour"][0]['hits'] == 1
+        assert result["day"][0]['hits'] == 2
+        assert result["month"][0]['hits'] == 3
+
+        result = self.storage.get_sum(
+            "sumServer",
+            start_date=self.fake_hour4,
+        )
+        assert len(result["hour"]) == 1
+        assert len(result["day"]) == 1
+        assert len(result["month"]) == 1
+        assert result["hour"][0]['hits'] == 1
+        assert result["day"][0]['hits'] == 1
+        assert result["month"][0]['hits'] == 1

@@ -94,7 +94,15 @@ class _BaseWritable(object):
         """
         raise NotImplementedError('store must be implemented.')
 
-    def get_sum(self, hook, start_date=None, end_date=None, limit=500, page=1):
+    def get_sum(
+        self,
+        hook,
+        start_date=None,
+        end_date=None,
+        limit=500,
+        page=1,
+        target=None
+    ):
         """
         Queries a subtending hook for summarization data. Can be overridden.
 
@@ -104,6 +112,7 @@ class _BaseWritable(object):
            - `end_date`: datetime.datetime representation of ending date
            - `limit`: The max amount of results to return
            - `page`: Result page number limited by `limit` number in a page
+           - 'target': search string to limit results; meaning depend on hook
 
         .. versionchanged:: 2.0.0
         """
