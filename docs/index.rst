@@ -242,7 +242,7 @@ Results that are returned from all instances of get_usage should **always** look
              'ip_info': str or None,
              'path': str,
              'speed': float,
-             'datetime': datetime,
+             'date': datetime,
              'username': str,
              'track_var': str(dict) or None,
      },
