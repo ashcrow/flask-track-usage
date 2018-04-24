@@ -193,6 +193,7 @@ class MongoEngineStorage(_MongoStorage):
             url_args = db.DictField()
             username = db.StringField()
             user_agent = db.EmbeddedDocumentField(UserAgent)
+            track_var = db.DictField()
             apache_combined_log = db.StringField()
             meta = {
                 'collection': "usageTracking"
@@ -221,6 +222,7 @@ class MongoEngineStorage(_MongoStorage):
         doc.content_length = data['content_length']
         doc.url_args = data['url_args']
         doc.username = data['username']
+        doc.track_var = data['track_var']
         # the following is VERY MUCH A HACK to allow a passed 'doc' on set_up
         ua = doc._fields['user_agent'].document_type_obj()
         ua.browser = data['user_agent'].browser
