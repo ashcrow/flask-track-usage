@@ -188,6 +188,9 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[13] == result2['path']
         assert result[14] == result2['speed']
         assert result[15] == result2['date']
+        assert result[16] == result2['username']
+        track_var = result[17] if result[17] != '{}' else None
+        assert track_var == result2['track_var']
 
     def test_storage_get_usage(self):
         self.client.get('/')
@@ -208,6 +211,9 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[13] == result2['path']
         assert result[14] == result2['speed']
         assert result[15] == result2['date']
+        assert result[16] == result2['username']
+        track_var = result[17] if result[17] != '{}' else None
+        assert track_var == result2['track_var']
 
     def test_storage_get_usage_pagination(self):
         # test pagination
@@ -238,6 +244,9 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
             assert result[i][13] == result2[i]['path']
             assert result[i][14] == result2[i]['speed']
             assert result[i][15] == result2[i]['date']
+            assert result[i][16] == result2[i]['username']
+            track_var = result[i][17] if result[i][17] != '{}' else None
+            assert track_var == result2[i]['track_var']
 
 
 
