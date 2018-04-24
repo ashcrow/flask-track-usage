@@ -113,6 +113,8 @@ class TrackUsage(object):
             raise NotImplementedError(
                 'You must set include or exclude type.')
         g.start_time = datetime.datetime.utcnow()
+        if not hasattr(g, "track_var"):
+            g.track_var = {}
 
     def after_request(self, response):
         """
@@ -173,7 +175,8 @@ class TrackUsage(object):
             'url_args': dict(
                 [(k, ctx.request.args[k]) for k in ctx.request.args]
             ),
-            'username': None
+            'username': None,
+            'track_var': g.track_var
         }
         if ctx.request.authorization:
             data['username'] = str(ctx.request.authorization.username)

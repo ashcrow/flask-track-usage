@@ -108,7 +108,9 @@ class SQLStorage(Storage):
                     sql.Column('ip_info', sql.String(128)),
                     sql.Column('path', sql.String(32)),
                     sql.Column('speed', sql.Float),
-                    sql.Column('datetime', sql.DateTime)
+                    sql.Column('datetime', sql.DateTime),
+                    sql.Column('username', sql.String(128)),
+                    sql.Column('track_var', sql.String(128))
                 )
             else:
                 self._metadata.reflect(bind=self._eng)
@@ -142,7 +144,9 @@ class SQLStorage(Storage):
                 ip_info=data["ip_info"],
                 path=data["path"],
                 speed=data["speed"],
-                datetime=utcdatetime
+                datetime=utcdatetime,
+                username=data["username"],
+                track_var=json.dumps(data["track_var"], ensure_ascii=False)
             )
             con.execute(stmt)
         return data
@@ -179,7 +183,9 @@ class SQLStorage(Storage):
                 'ip_info': r[12],
                 'path': r[13],
                 'speed': r[14],
-                'date': r[15]
+                'date': r[15],
+                'username': r[16],
+                'track_var': r[17] if r[17] != '{}' else None
             } for r in raw_data]
         return usage_data
 

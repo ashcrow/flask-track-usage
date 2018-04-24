@@ -49,11 +49,6 @@ class _BaseWritable(object):
            - `args`: All non-keyword arguments.
            - `kwargs`: All keyword arguments.
         """
-        # if "hooks" in kwargs:
-        #     self._temp_hooks = kwargs["hooks"]
-        #     del kwargs["hooks"]
-        # else:
-        #     self._temp_hooks = []
         #
         self.set_up(*args, **kwargs)
         #

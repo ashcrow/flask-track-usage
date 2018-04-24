@@ -48,7 +48,7 @@ Usage
 ::
 
     # Create the Flask 'app'
-    from flask import Flask
+    from flask import Flask, g
     app = Flask(__name__)
 
     # Set the configuration items manually for the example
@@ -74,6 +74,7 @@ Usage
     @t.include
     @app.route('/')
     def index():
+        g.track_var["optional"] = "something"
         return "Hello"
 
     # Run the application!
@@ -233,7 +234,7 @@ Results that are returned from all instances of get_usage should **always** look
                  'version': str,
              },
              'blueprint': str,
-             'view_args': dict or None
+             'view_args': str(dict) or None,
              'status': int,
              'remote_addr': str,
              'xforwardedfor': str,
@@ -242,6 +243,8 @@ Results that are returned from all instances of get_usage should **always** look
              'path': str,
              'speed': float,
              'date': datetime,
+             'username': str,
+             'track_var': str(dict) or None,
      },
      {
          ....
@@ -279,7 +282,7 @@ Not all Stores support all of these hooks. See the details for more information.
 
     from flask.ext.track_usage import TrackUsage
     from flask.ext.track_usage.storage.mongo import MongoEngineStorage
-    from flask.ext.track_usage.summarization import sumBasic
+    from flask.ext.track_usage.summarization import sumUrl
 
-    t = TrackUsage(app, [MongoEngineStorage(hooks=[sumBasic])])
+    t = TrackUsage(app, [MongoEngineStorage(hooks=[sumUrl])])
 
