@@ -81,6 +81,36 @@ Usage
     app.run(debug=True)
 
 
+Upgrading Schema
+----------------
+
+SQL
+~~~
+
+1.x -> 2.0.0
+````````````
+1. Edit alembic.ini setting ``sqlalchemy.url`` to the database that you want to upgrade to 2.0.0.
+2. Run the alembic upgrade like so::
+
+  $ alembic upgrade 0aedc36acb3f
+  INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+  INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+  INFO  [alembic.runtime.migration] Running upgrade <base> -> 07c46d368ba4, Initial empty db
+  INFO  [alembic.runtime.migration] Running upgrade 07c46d368ba4 -> 0aedc36acb3f, Upgrade to 2.0.0
+
+
+MongoDB
+```````
+MongoDB should not need modification
+
+Redis
+`````
+Redis should not need modification
+
+CouchDB
+```````
+CouchDB should not need modification
+
 Blueprint Support
 -----------------
 Blueprints can be included or excluded from Flask-TrackUsage in their entirety.
