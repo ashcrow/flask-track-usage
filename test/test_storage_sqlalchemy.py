@@ -66,10 +66,10 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         self.track_usage.include_blueprint(self.blueprint)
 
     def test_table_name(self):
-
         meta = sql.MetaData()
         meta.reflect(bind=self.storage._eng)
-        assert self.given_table_name == meta.tables.keys()[0]
+        print(self.given_table_name, list(meta.tables.keys())[0])
+        self.assertIn(self.given_table_name, meta.tables.keys())
 
     def test_storage_data_basic(self):
         self.client.get('/')
@@ -134,7 +134,7 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         # Next check with blueprint the get_usage is correct
         self.client.get('/blueprint')
         rows = self.storage._get_raw()
-        print rows[1]
+        print(rows[1])
         result = rows[1]# if rows[0][6] is None else rows[0]
         #assert result[0] == 2 # first row
         assert result[1] == u'http://localhost/blueprint'
@@ -187,6 +187,9 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[13] == result2['path']
         assert result[14] == result2['speed']
         assert result[15] == result2['date']
+        assert result[16] == result2['username']
+        track_var = result[17] if result[17] != '{}' else None
+        assert track_var == result2['track_var']
 
     def test_storage_get_usage(self):
         self.client.get('/')
@@ -207,6 +210,9 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
         assert result[13] == result2['path']
         assert result[14] == result2['speed']
         assert result[15] == result2['date']
+        assert result[16] == result2['username']
+        track_var = result[17] if result[17] != '{}' else None
+        assert track_var == result2['track_var']
 
     def test_storage_get_usage_pagination(self):
         # test pagination
@@ -237,6 +243,9 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
             assert result[i][13] == result2[i]['path']
             assert result[i][14] == result2[i]['speed']
             assert result[i][15] == result2[i]['date']
+            assert result[i][16] == result2[i]['username']
+            track_var = result[i][17] if result[i][17] != '{}' else None
+            assert track_var == result2[i]['track_var']
 
 
 @unittest.skipUnless(HAS_POSTGRES, "Requires psycopg2 Postgres package")

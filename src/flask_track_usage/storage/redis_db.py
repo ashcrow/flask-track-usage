@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Steve Milner
+# Copyright (c) 2013-2018 Steve Milner
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,6 @@
 """
 Simple redis storage.
 """
-
-from __future__ import absolute_import
-
 import json
 
 from datetime import datetime
@@ -69,6 +66,8 @@ class _RedisStorage(Storage):
             'ip_info': data["ip_info"] or "",
             'path': data["path"] or "",
             'speed': data["speed"] or "",
+            'username': data["username"] or "",
+            'track_var': data["track_var"] or "",
             'datetime': str(utcdatetime) or ""
         }
         struct_name = self._construct_struct_name(utcdatetime)
@@ -104,7 +103,7 @@ class _RedisStorage(Storage):
         # TODO: pipeline data request
         items = []
         for d in data:
-            for item in d.values():
+            for item in list(d.values()):
                 try:
                     # skip items when errors occur
                     items.append(literal_eval(item))
@@ -137,7 +136,7 @@ class _RedisStorage(Storage):
            - `date1`: First datetime instance to compare.
            - `date2`: Second datetime instance to compare.
         """
-        for i in xrange(len(date1)):
+        for i in range(len(date1)):
             if date1[i] != date2[i]:
                 return i
         return -1

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2013 Steve Milner
+# Copyright (c) 2013-2018 Steve Milner
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@ from setuptools import setup
 
 setup(
     name='Flask-Track-Usage',
-    version='1.1.0',
+    version='2.0.dev0',
     url='https://github.com/ashcrow/flask-track-usage',
     license='MBSD',
     author='Steve Milner',

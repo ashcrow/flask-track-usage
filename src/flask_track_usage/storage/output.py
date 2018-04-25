@@ -29,45 +29,57 @@
 # IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 """
-Basic data tests.
+Output writer.
 """
 
-import datetime
-
-from flask_track_usage import TrackUsage
-
-from . import FlaskTrackUsageTestCase, TestStorage
+from flask_track_usage.storage import Writer
 
 
-class TestData(FlaskTrackUsageTestCase):
+class OutputWriter(Writer):
     """
-    Tests specific to expected data.
+    Writes data to a provided file like object.
     """
 
-    def setUp(self):
+    def set_up(self, output=None, transform=None):
         """
-        Set up an app to test with.
-        """
-        FlaskTrackUsageTestCase.setUp(self)
-        self.storage = TestStorage()
-        self.track_usage = TrackUsage(self.app, self.storage)
+        Sets the file like object.
 
-    def test_expected_data(self):
+        .. note::
+
+           Make sure to pass in instances which allow multiple writes.
+
+        :Parameters:
+           - `output`: A file like object to use. Default: sys.stderr
+           - `transform`: Optional function to modify the output before write.
         """
-        Test that the data is in the expected formart.
+        self.transform = transform
+        if self.transform is None:
+            self.transform = str
+
+        if output is None:
+            import sys
+            output = sys.stderr
+
+        if not hasattr(output, 'write'):
+            raise TypeError('A file like object must have a write method')
+        elif not hasattr(output, 'writable'):
+            raise TypeError('A file like object must have a writable method')
+        elif not output.writable():
+            raise ValueError('Provided file like object is not writable')
+
+        self.flushable = False
+        if hasattr(output, 'flush'):
+            self.flushable = True
+
+        self.output = output
+
+    def store(self, data):
         """
-        self.client.get('/')
-        result = self.storage.get()
-        self.assertEquals(result.__class__, dict)
-        self.assertIsNone(result['blueprint'])
-        self.assertIsNone(result['ip_info'])
-        self.assertEquals(result['status'], 200)
-        self.assertEquals(result['remote_addr'], '127.0.0.1')
-        self.assertEquals(result['speed'].__class__, float)
-        self.assertEquals(result['view_args'], {})
-        self.assertEquals(result['url'], 'http://localhost/')
-        self.assertEquals(result['path'], '/')
-        self.assertEquals(result['authorization'], False)
-        self.assertTrue(result['user_agent'].string.startswith('werkzeug'))
-        self.assertEquals(type(result['date']), int)
-        self.assertTrue(datetime.datetime.fromtimestamp(result['date']))
+        Executed on "function call".
+
+        :Parameters:
+           - `data`: Data to store.
+        """
+        self.output.write(self.transform(data))
+        if self.flushable:
+            self.output.flush()

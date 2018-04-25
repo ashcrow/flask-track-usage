@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Steve Milner
+# Copyright (c) 2013-2018 Steve Milner
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@ Simple mongodb storage.
 """
 
 import datetime
+import inspect
 
 from flask_track_usage.storage import Storage
 
@@ -60,7 +61,7 @@ class _MongoStorage(Storage):
         }
         data['date'] = datetime.datetime.fromtimestamp(data['date'])
         data['user_agent'] = ua_dict
-        print self.collection.insert(data)
+        print(self.collection.insert(data))
 
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """
@@ -99,7 +100,7 @@ class MongoPiggybackStorage(_MongoStorage):
     Uses a pymongo collection to store data.
     """
 
-    def set_up(self, collection):
+    def set_up(self, collection, hooks=None):
         """
         Sets the collection.
 
@@ -116,7 +117,7 @@ class MongoStorage(_MongoStorage):
 
     def set_up(
             self, database, collection, host='127.0.0.1',
-            port=27017, username=None, password=None):
+            port=27017, username=None, password=None, hooks=None):
         """
         Sets the collection.
 
@@ -134,3 +135,186 @@ class MongoStorage(_MongoStorage):
         if username and password:
             self.db.authenticate(username, password)
         self.collection = getattr(self.db, collection)
+
+
+class MongoEngineStorage(_MongoStorage):
+    """
+    Uses MongoEngine library to store data in MongoDB.
+
+    The resulting collection is named `usageTracking`.
+
+    Should you need to access the actual Document class that this storage uses,
+    you can pull it from `collection` *instance* attribute. For example: ::
+
+    trackerDoc = MongoEngineStorage().collection
+    """
+
+    def set_up(self, doc=None, website=None, apache_log=False, hooks=None):
+        import mongoengine as db
+        """
+        Sets the general settings.
+
+        :Parameters:
+           - `doc`: optional alternate MongoEngine document class.
+           - 'website': name for the website. Defaults to 'default'. Useful
+             when multiple websites are saving data to the same collection.
+           - 'apache_log': if set to True, then an attribute called
+             'apache_combined_log' is set that mimics a line from a traditional
+             apache webserver web log text file.
+
+        .. versionchanged:: 2.0.0
+        """
+
+        class UserAgent(db.EmbeddedDocument):
+            browser = db.StringField()
+            language = db.StringField()
+            platform = db.StringField()
+            version = db.StringField()
+            string = db.StringField()
+
+        class UsageTracker(db.Document):
+            date = db.DateTimeField(
+                required=True,
+                default=datetime.datetime.utcnow
+            )
+            website = db.StringField(required=True, default="default")
+            server_name = db.StringField(default="self")
+            blueprint = db.StringField(default=None)
+            view_args = db.DictField()
+            ip_info = db.StringField()
+            xforwardedfor = db.StringField()
+            path = db.StringField()
+            speed = db.FloatField()
+            remote_addr = db.StringField()
+            url = db.StringField()
+            status = db.IntField()
+            authorization = db.BooleanField()
+            content_length = db.IntField()
+            url_args = db.DictField()
+            username = db.StringField()
+            user_agent = db.EmbeddedDocumentField(UserAgent)
+            track_var = db.DictField()
+            apache_combined_log = db.StringField()
+            meta = {
+                'collection': "usageTracking"
+            }
+
+        self.collection = doc or UsageTracker
+        # self.user_agent = UserAgent
+        self.website = website or 'default'
+        self.apache_log = apache_log
+
+    def store(self, data):
+        doc = self.collection()
+        doc.date = datetime.datetime.fromtimestamp(data['date'])
+        doc.website = self.website
+        doc.server_name = data['server_name']
+        doc.blueprint = data['blueprint']
+        doc.view_args = data['view_args']
+        doc.ip_info = data['ip_info']
+        doc.xforwardedfor = data['xforwardedfor']
+        doc.path = data['path']
+        doc.speed = data['speed']
+        doc.remote_addr = data['remote_addr']
+        doc.url = data['url']
+        doc.status = data['status']
+        doc.authorization = data['authorization']
+        doc.content_length = data['content_length']
+        doc.url_args = data['url_args']
+        doc.username = data['username']
+        doc.track_var = data['track_var']
+        # the following is VERY MUCH A HACK to allow a passed 'doc' on set_up
+        ua = doc._fields['user_agent'].document_type_obj()
+        ua.browser = data['user_agent'].browser
+        if data['user_agent'].language:
+            ua.language = data['user_agent'].language
+        ua.platform = data['user_agent'].platform
+        if data['user_agent'].version:
+            ua.version = str(data['user_agent'].version)
+        ua.string = data['user_agent'].string
+        doc.user_agent = ua
+        if self.apache_log:
+            t = '{h} - {u} [{t}] "{r}" {s} {b} "{ref}" "{ua}"'.format(
+                h=data['remote_addr'],
+                u=data["username"] or '-',
+                t=doc.date.strftime("%d/%b/%Y:%H:%M:%S %z"),
+                r=data.get("request", '?'),
+                s=data['status'],
+                b=data['content_length'],
+                ref=data['url'],
+                ua=str(data['user_agent'])
+            )
+            doc.apache_combined_log = t
+        doc.save()
+        data['mongoengine_document'] = doc
+        return data
+
+    def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
+        """
+        Implements the simple usage information by criteria in a standard form.
+
+        :Parameters:
+           - `start_date`: datetime.datetime representation of starting date
+           - `end_date`: datetime.datetime representation of ending date
+           - `limit`: The max amount of results to return
+           - `page`: Result page number limited by `limit` number in a page
+
+        .. versionchanged:: 2.0.0
+        """
+        query = {}
+        if start_date:
+            query["date__gte"] = start_date
+        if end_date:
+            query["date__lte"] = end_date
+        if limit:
+            first = limit * (page - 1)
+            last = limit * page
+            logs = self.collection.objects(
+                **query
+            ).order_by('-date')[first:last]
+        else:
+            logs = self.collection.objects(**query).order_by('-date')
+        result = [log.to_mongo().to_dict() for log in logs]
+        return result
+
+    def get_sum(
+        self,
+        hook,
+        start_date=None,
+        end_date=None,
+        limit=500,
+        page=1,
+        target=None
+    ):
+        """
+        Queries a subtending hook for summarization data.
+
+        :Parameters:
+           - 'hook': the hook 'class' or it's name as a string
+           - `start_date`: datetime.datetime representation of starting date
+           - `end_date`: datetime.datetime representation of ending date
+           - `limit`: The max amount of results to return
+           - `page`: Result page number limited by `limit` number in a page
+           - 'target': search string to limit results; meaning depend on hook
+
+
+        .. versionchanged:: 2.0.0
+        """
+        if inspect.isclass(hook):
+            hook_name = hook.__name__
+        else:
+            hook_name = str(hook)
+        for h in self._post_storage_hooks:
+            if h.__class__.__name__ == hook_name:
+                return h.get_sum(
+                    start_date=start_date,
+                    end_date=end_date,
+                    limit=limit,
+                    page=page,
+                    target=target,
+                    _parent_class_name=self.__class__.__name__,
+                    _parent_self=self
+                )
+        raise NotImplementedError(
+            'Cannot find hook named "{}"'.format(hook_name)
+        )

@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Steve Milner
+# Copyright (c) 2013-2018 Steve Milner
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,11 +35,12 @@ Basic metrics tracking with Flask.
 import datetime
 import json
 import time
-import urllib
+
+import six
 
 from flask import _request_ctx_stack, g
 
-__version__ = '1.1.0'
+__version__ = '2.0.dev0'
 __author__ = 'Steve Milner'
 __license__ = 'MBSD'
 
@@ -49,16 +50,26 @@ class TrackUsage(object):
     Tracks basic usage of Flask applications.
     """
 
-    def __init__(self, app=None, storage=None):
+    def __init__(self, app=None, storage=None, _fake_time=None):
         """
         Create the instance.
 
         :Parameters:
            - `app`: Optional app to use.
-           - `storage`: If app is set you must pass the storage callable now.
+           - `storage`: If app is set, required list of storage callables.
         """
+        #
+        # `_fake_time` is to force the time stamp of the request for testing
+        # purposes. It is not normally used by end users. Must be a native
+        # datetime object.
+        #
         self._exclude_views = set()
         self._include_views = set()
+
+        if callable(storage):
+            storage = [storage]
+
+        self._fake_time = _fake_time
 
         if app is not None and storage is not None:
             self.init_app(app, storage)
@@ -72,7 +83,7 @@ class TrackUsage(object):
            - `storage`: The storage callable which will store result.
         """
         self.app = app
-        self._storage = storage
+        self._storages = storage
         self._use_freegeoip = app.config.get(
             'TRACK_USAGE_USE_FREEGEOIP', False)
         self._freegeoip_endpoint = app.config.get(
@@ -102,6 +113,8 @@ class TrackUsage(object):
             raise NotImplementedError(
                 'You must set include or exclude type.')
         g.start_time = datetime.datetime.utcnow()
+        if not hasattr(g, "track_var"):
+            g.track_var = {}
 
     def after_request(self, response):
         """
@@ -133,9 +146,15 @@ class TrackUsage(object):
             speed = float("%s.%s" % (
                 speed_result.seconds, speed_result.microseconds))
 
+        if self._fake_time:
+            current_time = self._fake_time
+        else:
+            current_time = now
+
         data = {
             'url': ctx.request.url,
             'user_agent': ctx.request.user_agent,
+            'server_name': ctx.app.name,
             'blueprint': ctx.request.blueprint,
             'view_args': ctx.request.view_args,
             'status': response.status_code,
@@ -146,15 +165,29 @@ class TrackUsage(object):
             'ip_info': None,
             'path': ctx.request.path,
             'speed': float(speed),
-            'date': int(time.mktime(now.timetuple()))
+            'date': int(time.mktime(current_time.timetuple())),
+            'content_length': response.content_length,
+            'request': "{} {} {}".format(
+                ctx.request.method,
+                ctx.request.url,
+                ctx.request.environ.get('SERVER_PROTOCOL')
+            ),
+            'url_args': dict(
+                [(k, ctx.request.args[k]) for k in ctx.request.args]
+            ),
+            'username': None,
+            'track_var': g.track_var
         }
+        if ctx.request.authorization:
+            data['username'] = str(ctx.request.authorization.username)
         if self._use_freegeoip:
-            ip_info = json.loads(urllib.urlopen(
-                self._freegeoip_endpoint + urllib.quote_plus(
-                    remote_addr)).read())
+            ip_info = json.loads(six.moves.urllib.request.urlopen(
+                self._freegeoip_endpoint + six.moves.urllib_parse.quote_plus(
+                    ctx.request.remote_addr)).read())
             data['ip_info'] = ip_info
 
-        self._storage(data)
+        for storage in self._storages:
+            storage(data)
         return response
 
     def exclude(self, view):
@@ -236,10 +269,12 @@ if __name__ == '__main__':
     app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
 
     # We will just print out the data for the example
-    from flask_track_usage.storage.printer import PrintStorage
+    from flask_track_usage.storage.printer import PrintWriter
+    from flask_track_usage.storage.output import OutputWriter
 
-    # Make an instance of the extension
-    t = TrackUsage(app, PrintStorage())
+    # Make an instance of the extension and put two writers
+    t = TrackUsage(app, [PrintWriter(), OutputWriter(
+        transform=lambda s: "OUTPUT: " + str(s))])
 
     # Include the view in the metrics
     @t.include

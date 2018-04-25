@@ -1,4 +1,7 @@
 flask
+six
 pymongo
 sqlalchemy
+alembic
 couchdb>=1.0
+mongoengine
