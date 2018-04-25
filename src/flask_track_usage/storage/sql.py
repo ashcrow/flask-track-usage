@@ -74,6 +74,7 @@ class SQLStorage(Storage):
         .. versionchanged:: 1.1.0
            xforwardfor column added directly after remote_addr
         .. versionchanged:: 2.0.0
+           table is created if it does not already exist
            added summary tables
         """
 
@@ -112,6 +113,8 @@ class SQLStorage(Storage):
                     sql.Column('username', sql.String(128)),
                     sql.Column('track_var', sql.String(128))
                 )
+                # Create the table if it does not exist
+                self.track_table.create(bind=self._eng)
             else:
                 self._metadata.reflect(bind=self._eng)
                 self.track_table = self._metadata.tables[table_name]
