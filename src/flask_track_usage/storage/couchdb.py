@@ -58,6 +58,8 @@ try:
         path = TextField()
         speed = FloatField()
         datetime = DateTimeField(default=datetime.now)
+        username = TextField()
+        track_var = TextField()
         by_date = ViewField('start-end', '''function(doc, req) {
             if (!doc._conflicts) {
                 emit(doc.datetime, doc);
@@ -96,6 +98,8 @@ class _CouchDBStorage(Storage):
                                ip_info=data["ip_info"],
                                path=data["path"],
                                speed=data["speed"],
+                               username=data["username"],
+                               track_var=data["track_var"],
                                datetime=utcdatetime)
         usage_data.store(self.db)
 
