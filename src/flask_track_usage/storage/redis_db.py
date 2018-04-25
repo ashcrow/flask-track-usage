@@ -66,6 +66,8 @@ class _RedisStorage(Storage):
             'ip_info': data["ip_info"] or "",
             'path': data["path"] or "",
             'speed': data["speed"] or "",
+            'username': data["username"] or "",
+            'track_var': data["track_var"] or "",
             'datetime': str(utcdatetime) or ""
         }
         struct_name = self._construct_struct_name(utcdatetime)
