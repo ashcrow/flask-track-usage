@@ -121,7 +121,7 @@ TRACK_USAGE_FREEGEOIP_ENDPOINT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Values**: URL for RESTful JSON query
 
-**Default**: None
+**Default**: "http://extreme-ip-lookup.com/json/{ip}"
 
 If TRACK_USAGE_USE_FREEGEOIP is True, then this field must be set. Mark the location for the IP address with "{ip}". For example:
 

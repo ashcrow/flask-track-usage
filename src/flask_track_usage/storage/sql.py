@@ -121,6 +121,10 @@ class SQLStorage(Storage):
         """
         user_agent = data["user_agent"]
         utcdatetime = datetime.datetime.fromtimestamp(data['date'])
+        if data["ip_info"]:
+            ip_info_str = json.dumps(data["ip_info"])[:128]
+        else:
+            ip_info_str = None
         with self._eng.begin() as con:
             stmt = self.track_table.insert().values(
                 url=data['url'],
@@ -134,7 +138,7 @@ class SQLStorage(Storage):
                 remote_addr=data["remote_addr"],
                 xforwardedfor=data["xforwardedfor"],
                 authorization=data["authorization"],
-                ip_info=json.dumps(data["ip_info"])[:128],
+                ip_info=ip_info_str,
                 path=data["path"],
                 speed=data["speed"],
                 datetime=utcdatetime

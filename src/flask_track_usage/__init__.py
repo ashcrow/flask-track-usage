@@ -76,11 +76,7 @@ class TrackUsage(object):
         self._use_freegeoip = app.config.get(
             'TRACK_USAGE_USE_FREEGEOIP', False)
         self._freegeoip_endpoint = app.config.get(
-            'TRACK_USAGE_FREEGEOIP_ENDPOINT', None)
-        if self._use_freegeoip and not self._freegeoip_endpoint:
-            raise KeyError(
-                "TRACK_USAGE_FREEGEOIP_ENDPOINT must be set in configs"
-            )
+            'TRACK_USAGE_FREEGEOIP_ENDPOINT', "http://extreme-ip-lookup.com/json/{ip}")
         self._type = app.config.get(
             'TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS', 'exclude')
 
@@ -158,7 +154,18 @@ class TrackUsage(object):
                 url = self._freegeoip_endpoint.format(ip=clean_ip)
             else:
                 url = self._freegeoip_endpoint + clean_ip
-            ip_info = json.loads(urllib.urlopen(url).read())
+            # seperate capture and conversion to aid in debugging
+            text = urllib.urlopen(url).read()
+            ip_info = json.loads(text)
+            if url.startswith("http://extreme-ip-lookup.com/"):
+                # remove some elements to make it fit in a 128char string
+                del ip_info["businessWebsite"]
+                del ip_info["query"]
+                del ip_info["isp"]
+                del ip_info["status"]
+                del ip_info["ipType"]
+                del ip_info["businessName"]
+                del ip_info["continent"]
             data['ip_info'] = ip_info
 
         self._storage(data)
