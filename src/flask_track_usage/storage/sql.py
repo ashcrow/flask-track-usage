@@ -133,7 +133,9 @@ class SQLStorage(Storage):
                 ua_platform=user_agent.platform,
                 ua_version=user_agent.version,
                 blueprint=data["blueprint"],
-                view_args=json.dumps(data["view_args"], ensure_ascii=False)[:64],
+                view_args=json.dumps(
+                    data["view_args"], ensure_ascii=False
+                )[:64],
                 status=data["status"],
                 remote_addr=data["remote_addr"],
                 xforwardedfor=data["xforwardedfor"],

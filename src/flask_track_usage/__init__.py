@@ -76,7 +76,9 @@ class TrackUsage(object):
         self._use_freegeoip = app.config.get(
             'TRACK_USAGE_USE_FREEGEOIP', False)
         self._freegeoip_endpoint = app.config.get(
-            'TRACK_USAGE_FREEGEOIP_ENDPOINT', "http://extreme-ip-lookup.com/json/{ip}")
+            'TRACK_USAGE_FREEGEOIP_ENDPOINT',
+            "http://extreme-ip-lookup.com/json/{ip}"
+        )
         self._type = app.config.get(
             'TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS', 'exclude')
 
