@@ -76,7 +76,11 @@ class TrackUsage(object):
         self._use_freegeoip = app.config.get(
             'TRACK_USAGE_USE_FREEGEOIP', False)
         self._freegeoip_endpoint = app.config.get(
-            'TRACK_USAGE_FREEGEOIP_ENDPOINT', 'http://freegeoip.net/json/')
+            'TRACK_USAGE_FREEGEOIP_ENDPOINT', None)
+        if self._use_freegeoip and not self._freegeoip_endpoint:
+            raise KeyError(
+                "TRACK_USAGE_FREEGEOIP_ENDPOINT must be set in configs"
+            )
         self._type = app.config.get(
             'TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS', 'exclude')
 
@@ -149,9 +153,12 @@ class TrackUsage(object):
             'date': int(time.mktime(now.timetuple()))
         }
         if self._use_freegeoip:
-            ip_info = json.loads(urllib.urlopen(
-                self._freegeoip_endpoint + urllib.quote_plus(
-                    remote_addr)).read())
+            clean_ip = urllib.quote_plus(str(ctx.request.remote_addr))
+            if '{ip}' in self._freegeoip_endpoint:
+                url = self._freegeoip_endpoint.format(ip=clean_ip)
+            else:
+                url = self._freegeoip_endpoint + clean_ip
+            ip_info = json.loads(urllib.urlopen(url).read())
             data['ip_info'] = ip_info
 
         self._storage(data)
