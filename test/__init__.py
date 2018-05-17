@@ -75,3 +75,24 @@ class FlaskTrackUsageTestCase(unittest.TestCase):
         @self.app.route('/')
         def index():
             return "Hello!"
+
+class FlaskTrackUsageTestCaseGeoIP(unittest.TestCase):
+    """
+    Master TestCase for unittesting Flask-TrackUsage.
+    """
+
+    def setUp(self):
+        """
+        Happens before every test.
+        """
+        self.app = Flask(__name__)
+        self.app.config['TESTING'] = True
+
+        self.client = self.app.test_client()
+        self.app.config['TRACK_USAGE_USE_FREEGEOIP'] = True
+        self.app.config[
+            'TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'exclude'
+
+        @self.app.route('/')
+        def index():
+            return "Hello!"

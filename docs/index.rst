@@ -119,9 +119,19 @@ TRACK_USAGE_USE_FREEGEOIP
 
 TRACK_USAGE_FREEGEOIP_ENDPOINT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-**Values**: URL
+**Values**: URL for RESTful JSON query
 
-**Default**: http://freegeoip.net/json/
+**Default**: "http://extreme-ip-lookup.com/json/{ip}"
+
+If TRACK_USAGE_USE_FREEGEOIP is True, then this field must be set. Mark the location for the IP address with "{ip}". For example:
+
+    "http://example.com/{ip}/?key=484848484abc321"
+
+would resolve (with an IP of 1.2.3.4) to:
+
+    "http://example.com/1.2.3.4/?key=484848484abc321"
+
+If using SQLStorage, the returned JSON is converted to a string. You will likely want to pass a field list in the URL to avoid exceeding the 128 character limit of the field.
 
 
 Turn FreeGeoIP integration on or off

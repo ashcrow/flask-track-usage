@@ -35,7 +35,8 @@ Basic metrics tracking with Flask.
 import datetime
 import json
 import time
-import urllib
+from six.moves.urllib_parse import quote_plus
+from six.moves.urllib.request import urlopen
 
 from flask import _request_ctx_stack, g
 
@@ -76,7 +77,9 @@ class TrackUsage(object):
         self._use_freegeoip = app.config.get(
             'TRACK_USAGE_USE_FREEGEOIP', False)
         self._freegeoip_endpoint = app.config.get(
-            'TRACK_USAGE_FREEGEOIP_ENDPOINT', 'http://freegeoip.net/json/')
+            'TRACK_USAGE_FREEGEOIP_ENDPOINT',
+            "http://extreme-ip-lookup.com/json/{ip}"
+        )
         self._type = app.config.get(
             'TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS', 'exclude')
 
@@ -149,9 +152,17 @@ class TrackUsage(object):
             'date': int(time.mktime(now.timetuple()))
         }
         if self._use_freegeoip:
-            ip_info = json.loads(urllib.urlopen(
-                self._freegeoip_endpoint + urllib.quote_plus(
-                    remote_addr)).read())
+            clean_ip = quote_plus(str(ctx.request.remote_addr))
+            if '{ip}' in self._freegeoip_endpoint:
+                url = self._freegeoip_endpoint.format(ip=clean_ip)
+            else:
+                url = self._freegeoip_endpoint + clean_ip
+            # seperate capture and conversion to aid in debugging
+            text = urlopen(url).read()
+            ip_info = json.loads(text)
+            if url.startswith("http://extreme-ip-lookup.com/"):
+                del ip_info["businessWebsite"]
+                del ip_info["status"]
             data['ip_info'] = ip_info
 
         self._storage(data)

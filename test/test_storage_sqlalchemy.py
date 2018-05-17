@@ -25,8 +25,9 @@ except ImportError:
 
 import datetime
 import unittest
+import json
 from flask import Blueprint
-from test import FlaskTrackUsageTestCase
+from test import FlaskTrackUsageTestCase, FlaskTrackUsageTestCaseGeoIP
 from flask_track_usage import TrackUsage
 from flask_track_usage.storage.sql import SQLStorage
 
@@ -239,6 +240,10 @@ class TestSQLiteStorage(FlaskTrackUsageTestCase):
             assert result[i][15] == result2[i]['date']
 
 
+
+
+
+
 @unittest.skipUnless(HAS_POSTGRES, "Requires psycopg2 Postgres package")
 @unittest.skipUnless((HAS_SQLALCHEMY), "Requires SQLAlchemy")
 class TestPostgresStorage(TestSQLiteStorage):
@@ -269,3 +274,48 @@ class TestMySQLStorage(TestSQLiteStorage):
             table_name=self.given_table_name
         )
         metadata.create_all()
+
+
+
+@unittest.skipUnless(HAS_SQLALCHEMY, "Requires SQLAlchemy")
+class TestFreeGeoIP(FlaskTrackUsageTestCaseGeoIP):
+
+    def _create_storage(self):
+        engine = sql.create_engine("sqlite://")
+        metadata = sql.MetaData(bind=engine)
+        self.storage = SQLStorage(
+            engine=engine,
+            metadata=metadata,
+            table_name=self.given_table_name
+        )
+        metadata.create_all()
+
+    def tearDown(self):
+        meta = sql.MetaData()
+        meta.reflect(bind=self.storage._eng)
+        for table in reversed(meta.sorted_tables):
+            self.storage._eng.execute(table.delete())
+
+    def setUp(self):
+        self.given_table_name = 'my_usage'
+        FlaskTrackUsageTestCaseGeoIP.setUp(self)
+        self.blueprint = Blueprint('blueprint', __name__)
+
+        @self.blueprint.route('/blueprint')
+        def blueprint():
+            return "blueprint"
+        self.app.register_blueprint(self.blueprint)
+
+        self._create_storage()
+
+        self.track_usage = TrackUsage(self.app, self.storage)
+        self.track_usage.include_blueprint(self.blueprint)
+
+
+    def test_storage_freegeoip(self):
+        self.client.get('/')
+        con = self.storage._eng.connect()
+        s = sql.select([self.storage.track_table])
+        result = con.execute(s).fetchone()
+        j = json.loads(result[12])
+        assert j["ipType"] == "Residential"

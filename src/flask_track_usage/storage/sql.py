@@ -121,6 +121,16 @@ class SQLStorage(Storage):
         """
         user_agent = data["user_agent"]
         utcdatetime = datetime.datetime.fromtimestamp(data['date'])
+        if data["ip_info"]:
+            t = {}
+            for key in data["ip_info"]:
+                t[key] = data["ip_info"][key]
+                if len(json.dumps(t)) > 128:
+                    del t[key]
+                    break
+            ip_info_str = json.dumps(t)
+        else:
+            ip_info_str = None
         with self._eng.begin() as con:
             stmt = self.track_table.insert().values(
                 url=data['url'],
@@ -129,12 +139,14 @@ class SQLStorage(Storage):
                 ua_platform=user_agent.platform,
                 ua_version=user_agent.version,
                 blueprint=data["blueprint"],
-                view_args=json.dumps(data["view_args"], ensure_ascii=False),
+                view_args=json.dumps(
+                    data["view_args"], ensure_ascii=False
+                )[:64],
                 status=data["status"],
                 remote_addr=data["remote_addr"],
                 xforwardedfor=data["xforwardedfor"],
                 authorization=data["authorization"],
-                ip_info=data["ip_info"],
+                ip_info=ip_info_str,
                 path=data["path"],
                 speed=data["speed"],
                 datetime=utcdatetime
