@@ -35,7 +35,8 @@ Basic metrics tracking with Flask.
 import datetime
 import json
 import time
-import urllib
+from six.moves.urllib_parse import quote_plus
+from six.moves.urllib.request import urlopen
 
 from flask import _request_ctx_stack, g
 
@@ -151,23 +152,17 @@ class TrackUsage(object):
             'date': int(time.mktime(now.timetuple()))
         }
         if self._use_freegeoip:
-            clean_ip = urllib.quote_plus(str(ctx.request.remote_addr))
+            clean_ip = quote_plus(str(ctx.request.remote_addr))
             if '{ip}' in self._freegeoip_endpoint:
                 url = self._freegeoip_endpoint.format(ip=clean_ip)
             else:
                 url = self._freegeoip_endpoint + clean_ip
             # seperate capture and conversion to aid in debugging
-            text = urllib.urlopen(url).read()
+            text = urlopen(url).read()
             ip_info = json.loads(text)
             if url.startswith("http://extreme-ip-lookup.com/"):
-                # remove some elements to make it fit in a 128char string
                 del ip_info["businessWebsite"]
-                del ip_info["query"]
-                del ip_info["isp"]
                 del ip_info["status"]
-                del ip_info["ipType"]
-                del ip_info["businessName"]
-                del ip_info["continent"]
             data['ip_info'] = ip_info
 
         self._storage(data)

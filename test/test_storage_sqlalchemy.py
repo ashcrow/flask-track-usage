@@ -318,4 +318,4 @@ class TestFreeGeoIP(FlaskTrackUsageTestCaseGeoIP):
         s = sql.select([self.storage.track_table])
         result = con.execute(s).fetchone()
         j = json.loads(result[12])
-        assert j["org"] == "Loopback"
+        assert j["ipType"] == "Residential"

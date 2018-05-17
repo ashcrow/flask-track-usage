@@ -122,7 +122,13 @@ class SQLStorage(Storage):
         user_agent = data["user_agent"]
         utcdatetime = datetime.datetime.fromtimestamp(data['date'])
         if data["ip_info"]:
-            ip_info_str = json.dumps(data["ip_info"])[:128]
+            t = {}
+            for key in data["ip_info"]:
+                t[key] = data["ip_info"][key]
+                if len(json.dumps(t)) > 128:
+                    del t[key]
+                    break
+            ip_info_str = json.dumps(t)
         else:
             ip_info_str = None
         with self._eng.begin() as con:
