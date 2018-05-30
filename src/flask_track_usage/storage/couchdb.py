@@ -37,8 +37,9 @@ from flask_track_usage.storage import Storage
 
 from datetime import datetime
 try:
-    from couchdb.mapping import Document, TextField, IntegerField,\
-        DateTimeField, FloatField, BooleanField, ViewField
+    from couchdb.mapping import (
+        Document, TextField, IntegerField,
+        DateTimeField, FloatField, BooleanField, ViewField)
 
     class UsageData(Document):
         """

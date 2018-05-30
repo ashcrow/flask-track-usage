@@ -225,11 +225,11 @@ class SQLStorage(Storage):
             start_date = datetime.datetime(1970, 1, 1)
         with self._eng.begin() as con:
             _table = self.track_table
-            stmt = sql.select([self.track_table])\
-                .where(_table.c.datetime.between(start_date, end_date))\
-                .limit(limit)\
-                .offset(limit * (page - 1))\
-                .order_by(sql.desc(self.track_table.c.datetime))
+            stmt = sql.select([self.track_table]).where(
+                _table.c.datetime.between(start_date, end_date)).limit(
+                    limit).offset(
+                    limit * (page - 1)).order_by(
+                        sql.desc(self.track_table.c.datetime))
             res = con.execute(stmt)
             result = res.fetchall()
         return result

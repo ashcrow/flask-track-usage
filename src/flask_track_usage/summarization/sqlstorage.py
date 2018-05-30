@@ -36,20 +36,18 @@ def trim_times(unix_timestamp):
 
 
 def increment(con, table, dt, data, **values):
-    stmt = insert(table) \
-        .values(
-            date=dt,
-            hits=1,
-            transfer=data['content_length'],
-            **values
-        ) \
-        .on_conflict_do_update(
-            index_elements=['date'],
-            set_=dict(
-                hits=table.c.hits + 1,
-                transfer=table.c.transfer + data['content_length']
-            )
+    stmt = insert(table).values(
+        date=dt,
+        hits=1,
+        transfer=data['content_length'],
+        **values
+    ).on_conflict_do_update(
+        index_elements=['date'],
+        set_=dict(
+            hits=table.c.hits + 1,
+            transfer=table.c.transfer + data['content_length']
         )
+    )
     con.execute(stmt)
 
 
@@ -72,8 +70,8 @@ def create_tables(table_list, **kwargs):
                 )
             else:
                 self._metadata.reflect(bind=self._eng)
-                self.sum_tables[base_sum_table_name] = \
-                    self._metadata.tables[sum_table_name]
+                self.sum_tables[base_sum_table_name] = (
+                    self._metadata.tables[sum_table_name])
 
 
 ######################################################
