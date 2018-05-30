@@ -5,7 +5,9 @@ flask-track-usage
 
 Basic metrics tracking for the Flask framework. This focuses more on ip addresses/locations rather than tracking specific users pathing through an application. No extra cookies or javascript is used for usage tracking.
 
-[Read the docs](http://pythonhosted.org/Flask-Track-Usage) at PythonHosted.
+* [Read the latest docs](http://flask-track-usage.readthedocs.io/en/latest/)
+* [Read 2.0.0 docs](http://flask-track-usage.readthedocs.io/en/2.0.0/)
+* [Read 1.1.1 docs](http://flask-track-usage.readthedocs.io/en/1.1.1/)
 
 Similar Projects
 ----------------
