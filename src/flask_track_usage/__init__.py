@@ -42,7 +42,7 @@ import six
 
 from flask import _request_ctx_stack, g
 
-__version__ = '2.0.dev0'
+__version__ = '2.0.0'
 __author__ = 'Steve Milner'
 __license__ = 'MBSD'
 
