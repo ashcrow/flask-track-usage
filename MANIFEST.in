@@ -2,6 +2,7 @@ include CONTRIBUTORS
 include MANIFEST.in
 include LICENSE
 include README.md
+recursive-include alembic *
 recursive-include test *
 recursive-include src *
 recursive-include docs *
