@@ -1,5 +1,4 @@
-import mongoenginestorage
-import sqlstorage
+from flask_track_usage.summarization import mongoenginestorage, sqlstorage
 
 """
 Summarization routines.
