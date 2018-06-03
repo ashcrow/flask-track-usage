@@ -92,7 +92,7 @@ SQL
 1. Edit alembic.ini setting ``sqlalchemy.url`` to the database that you want to upgrade to 2.0.0.
 2. Run the alembic upgrade like so::
 
-  $ alembic upgrade 0aedc36acb3f
+  $ alembic upgrade head
   INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
   INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
   INFO  [alembic.runtime.migration] Running upgrade <base> -> 07c46d368ba4, Initial empty db
@@ -158,6 +158,10 @@ TRACK_USAGE_USE_FREEGEOIP
 
 Turn FreeGeoIP integration on or off. If set to true, then geography information is also stored in the usage logs.
 
+.. versionchanged:: 1.1.
+   The default server for using geoip integration changed to extreme-ip-lookup.com
+
+
 TRACK_USAGE_FREEGEOIP_ENDPOINT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Values**: URL for RESTful JSON query
@@ -166,11 +170,11 @@ TRACK_USAGE_FREEGEOIP_ENDPOINT
 
 If TRACK_USAGE_USE_FREEGEOIP is True, then this field must be set. Mark the location for the IP address with "{ip}". For example:
 
-    "http://example.com/{ip}/?key=484848484abc321"
+    "http://example.com/json/{ip}/"
 
 would resolve (with an IP of 1.2.3.4) to:
 
-    "http://example.com/1.2.3.4/?key=484848484abc321"
+    "http://example.com/json/1.2.3.4/"
 
 If using SQLStorage, the returned JSON is converted to a string. You will likely want to pass a field list in the URL to avoid exceeding the 128 character limit of the field.
 
@@ -229,11 +233,13 @@ mongo.MongoStorage
     :inherited-members:
 
 mongo.MongoEngineStorage
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 .. autoclass:: flask_track_usage.storage.mongo.MongoEngineStorage
+    :members:
+    :inherited-members:
 
 output.OutputWriter
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 .. autoclass:: flask_track_usage.storage.output.OutputWriter
     :members:
     :inherited-members:
@@ -326,3 +332,4 @@ Not all Stores support all of these hooks. See the details for more information.
 
     t = TrackUsage(app, [MongoEngineStorage(hooks=[sumUrl])])
 
+.. include:: hooks.rst
