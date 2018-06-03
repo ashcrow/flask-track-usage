@@ -99,10 +99,10 @@ class TestPostgreStorage(FlaskTrackUsageTestCase):
 
         self._create_storage()
 
-        self.fake_time  = datetime.datetime(2018, 04, 15, 9, 45, 12)  # Apr 15, 2018 at 9:45:12 AM UTC
-        self.fake_hour  = datetime.datetime(2018, 04, 15, 9,  0,  0)  # Apr 15, 2018 at 9:00:00 AM UTC
-        self.fake_day   = datetime.datetime(2018, 04, 15, 0,  0,  0)  # Apr 15, 2018 at 0:00:00 AM UTC
-        self.fake_month = datetime.datetime(2018, 04,  1, 0,  0,  0)  # Apr  1, 2018 at 0:00:00 AM UTC
+        self.fake_time  = datetime.datetime(2018, 4, 15, 9, 45, 12)  # Apr 15, 2018 at 9:45:12 AM UTC
+        self.fake_hour  = datetime.datetime(2018, 4, 15, 9,  0,  0)  # Apr 15, 2018 at 9:00:00 AM UTC
+        self.fake_day   = datetime.datetime(2018, 4, 15, 0,  0,  0)  # Apr 15, 2018 at 0:00:00 AM UTC
+        self.fake_month = datetime.datetime(2018, 4,  1, 0,  0,  0)  # Apr  1, 2018 at 0:00:00 AM UTC
 
         self.track_usage = TrackUsage(
             self.app,
