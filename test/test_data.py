@@ -36,7 +36,7 @@ import datetime
 
 from flask_track_usage import TrackUsage
 
-from . import FlaskTrackUsageTestCase, TestStorage
+from test import FlaskTrackUsageTestCase, TestStorage
 
 
 class TestData(FlaskTrackUsageTestCase):

@@ -161,7 +161,7 @@ class RedisStorage(_RedisStorage):
 
         :Parameters:
            - `host`: Host to conenct to. Default: 127.0.0.1
-           - `port`: Port to connect to. Default: 27017
+           - `port`: Port to connect to. Default: 6379
            - `password`: Optional password to authenticate with.
         """
         from redis import Redis
