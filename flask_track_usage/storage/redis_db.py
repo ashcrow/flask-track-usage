@@ -58,16 +58,16 @@ class _RedisStorage(Storage):
             'ua_language': user_agent.language or None,
             'ua_platform': user_agent.platform or None,
             'ua_version': user_agent.version or None,
-            'blueprint': data["blueprint"] or None,
+            'blueprint': data["blueprint"] if 'blueprint' in data else None,
             'view_args': json.dumps(data["view_args"], ensure_ascii=False),
-            'status': data["status"] or None,
-            'remote_addr': data["remote_addr"] or None,
-            'authorization': data["authorization"] or None,
-            'ip_info': data["ip_info"] or None,
-            'path': data["path"] or None,
-            'speed': data["speed"] or None,
-            'username': data["username"] or None,
-            'track_var': data["track_var"] or None,
+            'status': data["status"] if 'status' in data else None,
+            'remote_addr': data["remote_addr"] if 'remote_addr' in data else None,
+            'authorization': data["authorization"] if 'authorization' in data else None,
+            'ip_info': data["ip_info"] if 'ip_info' in data else None,
+            'path': data["path"] if 'path' in data else None,
+            'speed': data["speed"] if 'speed' in data else None,
+            'username': data["username"] if 'username' in data else None,
+            'track_var': data["track_var"] if 'track_var' in data else None,
             'datetime': str(utcdatetime) or None
         }
         struct_name = self._construct_struct_name(utcdatetime)
@@ -77,6 +77,7 @@ class _RedisStorage(Storage):
         self.db.sadd("usage_data_keys", struct_name)
         previous = len(self.db.hkeys(struct_name))
         self.db.hset(struct_name, previous + 1, json.dumps(d))
+        
 
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """
