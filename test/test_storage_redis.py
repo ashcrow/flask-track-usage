@@ -62,7 +62,7 @@ class TestRedisStorage(FlaskTrackUsageTestCase):
         Set up an app to test with.
         """
         FlaskTrackUsageTestCase.setUp(self)
-        self.app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
+        # self.app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
         self.storage = RedisStorage()
 
         # Clean out the storage
@@ -74,8 +74,8 @@ class TestRedisStorage(FlaskTrackUsageTestCase):
         Test that data is stored in RedisDB and retrieved correctly.
         """
         self.client.get('/')
-        # result = self.storage
-        # assert result['blueprint'] is None
+        result = self.storage.get_usage()
+        assert result['blueprint'] is None
         # assert result['ip_info'] is None
         # assert result['status'] == 200
         # self.assertTrue(result['remote_addr'])  # Should be set with modern versions of Flask

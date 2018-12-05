@@ -44,7 +44,7 @@ setup(
     description='Basic metrics tracking for the Flask framework.',
     long_description='Basic metrics tracking for the Flask framework.',
     packages=['flask_track_usage'],
-    package_dir={'flask_track_usage': 'src/flask_track_usage'},
+    # package_dir={'flask_track_usage': 'src/flask_track_usage'},
     zip_safe=False,
     include_package_data=True,
     platforms='any',
