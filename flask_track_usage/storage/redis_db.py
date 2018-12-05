@@ -54,21 +54,21 @@ class _RedisStorage(Storage):
         utcdatetime = datetime.fromtimestamp(data['date'])
         d = {
             'url': data['url'],
-            'ua_browser': user_agent.browser or "",
-            'ua_language': user_agent.language or "",
-            'ua_platform': user_agent.platform or "",
-            'ua_version': user_agent.version or "",
-            'blueprint': data["blueprint"] or "",
+            'ua_browser': user_agent.browser or None,
+            'ua_language': user_agent.language or None,
+            'ua_platform': user_agent.platform or None,
+            'ua_version': user_agent.version or None,
+            'blueprint': data["blueprint"] or None,
             'view_args': json.dumps(data["view_args"], ensure_ascii=False),
-            'status': data["status"] or "",
-            'remote_addr': data["remote_addr"] or "",
-            'authorization': data["authorization"] or "",
-            'ip_info': data["ip_info"] or "",
-            'path': data["path"] or "",
-            'speed': data["speed"] or "",
-            'username': data["username"] or "",
-            'track_var': data["track_var"] or "",
-            'datetime': str(utcdatetime) or ""
+            'status': data["status"] or None,
+            'remote_addr': data["remote_addr"] or None,
+            'authorization': data["authorization"] or None,
+            'ip_info': data["ip_info"] or None,
+            'path': data["path"] or None,
+            'speed': data["speed"] or None,
+            'username': data["username"] or None,
+            'track_var': data["track_var"] or None,
+            'datetime': str(utcdatetime) or None
         }
         struct_name = self._construct_struct_name(utcdatetime)
         # create a set which will be used as an index, in order not to use
@@ -76,7 +76,7 @@ class _RedisStorage(Storage):
         # Always try to add to avoid a network call
         self.db.sadd("usage_data_keys", struct_name)
         previous = len(self.db.hkeys(struct_name))
-        self.db.hset(struct_name, previous + 1, d)
+        self.db.hset(struct_name, previous + 1, json.dumps(d))
 
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """
@@ -106,7 +106,7 @@ class _RedisStorage(Storage):
             for item in list(d.values()):
                 try:
                     # skip items when errors occur
-                    items.append(literal_eval(item))
+                    items.append(json.loads(item))
                 except:
                     continue
         return items

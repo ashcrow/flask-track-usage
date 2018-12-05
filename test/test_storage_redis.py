@@ -69,26 +69,35 @@ class TestRedisStorage(FlaskTrackUsageTestCase):
         # self.storage.collection.drop()
         self.track_usage = TrackUsage(self.app, self.storage)
 
+
+    def tearDown(self):
+        """
+        Clean up the database
+        """
+        self.result
+
     def test_redis_storage_data(self):
         """
         Test that data is stored in RedisDB and retrieved correctly.
         """
         self.client.get('/')
         result = self.storage.get_usage()
+        result = result[0]
+        self.result = result
         assert result['blueprint'] is None
-        # assert result['ip_info'] is None
-        # assert result['status'] == 200
-        # self.assertTrue(result['remote_addr'])  # Should be set with modern versions of Flask
-        # assert result['speed'].__class__ is float
-        # assert result['view_args'] == {}
-        # assert result['url'] == 'http://localhost/'
-        # assert result['authorization'] is False
-        # assert result['user_agent']['browser'] is None  # because of testing
-        # assert result['user_agent']['platform'] is None  # because of testing
-        # assert result['user_agent']['language'] is None  # because of testing
-        # assert result['user_agent']['version'] is None  # because of testing
-        # assert result['path'] == '/'
-        # assert type(result['date']) is datetime.datetime
+        assert result['ip_info'] is None
+        assert result['status'] == 200
+        self.assertTrue(result['remote_addr'])  # Should be set with modern versions of Flask
+        assert result['speed'].__class__ is float
+        assert result['view_args'] == {}
+        assert result['url'] == 'http://localhost/'
+        assert result['authorization'] is False
+        assert result['user_agent']['browser'] is None  # because of testing
+        assert result['user_agent']['platform'] is None  # because of testing
+        assert result['user_agent']['language'] is None  # because of testing
+        assert result['user_agent']['version'] is None  # because of testing
+        assert result['path'] == '/'
+        assert type(result['date']) is datetime.datetime
 
     def test_redis_storage_get_usage(self):
         """
