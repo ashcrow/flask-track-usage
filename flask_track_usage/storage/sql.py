@@ -31,11 +31,11 @@
 """
 SQL storage based on SQLAlchemy
 """
-
+# from flask import current_app
 from . import Storage
 import json
 import datetime
-
+import sqlalchemy as sql
 
 class SQLStorage(Storage):
     """
@@ -78,7 +78,8 @@ class SQLStorage(Storage):
            added summary tables
         """
 
-        import sqlalchemy as sql
+        
+        # with current_app.app_context
         if db:
             self._eng = db.engine
             self._metadata = db.metadata
@@ -90,7 +91,7 @@ class SQLStorage(Storage):
         self.table_name = table_name
         self.sum_tables = {}
         self._con = None
-        with self._eng.begin() as self._con:
+        with self._eng.connect() as self._con:
             if not self._con.dialect.has_table(self._con, table_name):
                 self.track_table = sql.Table(
                     table_name, self._metadata,

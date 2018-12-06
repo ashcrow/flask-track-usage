@@ -80,6 +80,8 @@ class TrackUsage(object):
            - `storage`: The storage callable which will store result.
         """
         self.app = app
+        if callable(storage):
+            storage = [storage]
         self._storages = storage
         self._use_freegeoip = app.config.get(
             'TRACK_USAGE_USE_FREEGEOIP', False)

@@ -26,6 +26,7 @@ except ImportError:
 import datetime
 import unittest
 import json
+import os
 from flask import Blueprint
 from test import FlaskTrackUsageTestCase, FlaskTrackUsageTestCaseGeoIP
 from flask_track_usage import TrackUsage
@@ -267,24 +268,6 @@ class TestPostgresStorage(TestSQLiteStorage):
             table_name=self.given_table_name
         )
         metadata.create_all()
-
-
-@unittest.skipUnless(HAS_MYSQL, "Requires mysql-python package")
-@unittest.skipUnless((HAS_SQLALCHEMY), "Requires SQLAlchemy")
-class TestMySQLStorage(TestSQLiteStorage):
-
-    def _create_storage(self):
-        engine = sql.create_engine(
-            "mysql+mysqldb://travis:@localhost/track_usage_test")
-        metadata = sql.MetaData(bind=engine)
-        self.storage = SQLStorage(
-            engine=engine,
-            metadata=metadata,
-            table_name=self.given_table_name
-        )
-        metadata.create_all()
-
-
 
 @unittest.skipUnless(HAS_SQLALCHEMY, "Requires SQLAlchemy")
 class TestFreeGeoIP(FlaskTrackUsageTestCaseGeoIP):
