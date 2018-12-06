@@ -85,3 +85,30 @@ class TestMySQLStorage(FlaskTrackUsageTestCase):
         assert type(result['datetime']) is datetime.datetime
         assert result['username'] is None
         assert result['track_var'] == '{}'
+
+    def test_storage_get_usage_pagination(self):
+        # test pagination
+        for i in range(100):
+            self.client.get('/')
+
+        limit = 10
+        num_pages = 10
+        for page in range(1, num_pages + 1):
+            result = self.storage._get_usage(limit=limit, page=page)
+            assert len(result) == limit
+
+        # actual api test
+        result = self.storage._get_raw(limit=100)  # raw data
+        result2 = self.storage.get_usage(limit=100)  # dict data
+        for i in range(100):
+            for key in result[i].keys():
+                if key == 'id':
+                    assert key not in result2[i]
+                    assert key in result[i]
+                elif 'ua_' in key:
+                    result[i][key] == result2[i]['user_agent'][key.split('_')[1]]
+                elif result[i][key] == '{}':
+                    assert result2[i][key] is None
+                else:
+                    assert result[i][key] == result2[i][key]
+           

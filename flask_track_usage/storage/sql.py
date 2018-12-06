@@ -199,7 +199,7 @@ class SQLStorage(Storage):
                 'ip_info': r[12],
                 'path': r[13],
                 'speed': r[14],
-                'date': r[15],
+                'datetime': r[15],
                 'username': r[16],
                 'track_var': r[17] if r[17] != '{}' else None
             } for r in raw_data]
