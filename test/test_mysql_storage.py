@@ -19,18 +19,25 @@ from flask import Blueprint
 from test import FlaskTrackUsageTestCase
 from flask_track_usage import TrackUsage
 from flask_track_usage.storage.sql import SQLStorage
+from flask_track_usage.summarization import (
+    sumUrl,
+    sumRemote,
+    sumUserAgent,
+    sumLanguage,
+    sumServer,
+)
 
+if 'SQLALCHEMY_DATABASE_URI_TEST' in os.environ.keys():
+    SQLALCHEMY_DATABASE_URI = os.environ['SQLALCHEMY_DATABASE_URI_TEST']
+else:
+    SQLALCHEMY_DATABASE_URI = "mysql+mysqldb://scott:avalanche@localhost/test_flask_usage"
+    # SQLALCHEMY_DATABASE_URI = "mysql+mysqldb://travis@localhost/track_usage_test"
 
 @unittest.skipUnless(HAS_MYSQL, "Requires mysql-python package")
 @unittest.skipUnless((HAS_SQLALCHEMY), "Requires SQLAlchemy")
 class TestMySQLStorage(FlaskTrackUsageTestCase):
 
     def _create_storage(self):
-        if 'SQLALCHEMY_DATABASE_URI_TEST' in os.environ.keys():
-            SQLALCHEMY_DATABASE_URI = os.environ['SQLALCHEMY_DATABASE_URI_TEST']
-        else:
-            SQLALCHEMY_DATABASE_URI = "mysql+mysqldb://travis@localhost/track_usage_test"
-
         engine = sql.create_engine(SQLALCHEMY_DATABASE_URI)
         metadata = sql.MetaData(bind=engine)
         self.storage = SQLStorage(
@@ -111,4 +118,259 @@ class TestMySQLStorage(FlaskTrackUsageTestCase):
                     assert result2[i][key] is None
                 else:
                     assert result[i][key] == result2[i][key]
-           
+        
+    
+
+@unittest.skipUnless(HAS_MYSQL, "Requires mysql-python package")
+@unittest.skipUnless((HAS_SQLALCHEMY), "Requires SQLAlchemy")
+class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
+
+    def _create_storage(self):
+        engine = sql.create_engine(SQLALCHEMY_DATABASE_URI)
+        metadata = sql.MetaData(bind=engine)
+        self.storage = SQLStorage(
+            engine=engine,
+            metadata=metadata,
+            table_name=self.given_table_name,
+            hooks=[
+                sumUrl,
+                sumRemote,
+                sumUserAgent,
+                sumLanguage,
+                sumServer
+            ]
+        )
+        # metadata.create_all()
+
+    def setUp(self):
+        self.given_table_name = 'my_usage'
+        FlaskTrackUsageTestCase.setUp(self)
+        self.blueprint = Blueprint('blueprint', __name__)
+
+        @self.blueprint.route('/blueprint')
+        def blueprint():
+            return "blueprint"
+        self.app.register_blueprint(self.blueprint)
+
+        self._create_storage()
+
+        self.fake_time  = datetime.datetime(2018, 4, 15, 9, 45, 12)  # Apr 15, 2018 at 9:45:12 AM UTC
+        self.fake_hour  = datetime.datetime(2018, 4, 15, 9,  0,  0)  # Apr 15, 2018 at 9:00:00 AM UTC
+        self.fake_day   = datetime.datetime(2018, 4, 15, 0,  0,  0)  # Apr 15, 2018 at 0:00:00 AM UTC
+        self.fake_month = datetime.datetime(2018, 4,  1, 0,  0,  0)  # Apr  1, 2018 at 0:00:00 AM UTC
+
+        self.track_usage = TrackUsage(
+            self.app,
+            self.storage,
+            _fake_time=self.fake_time
+        )
+        self.track_usage.include_blueprint(self.blueprint)
+
+    def tearDown(self):
+        meta = sql.MetaData()
+        meta.reflect(bind=self.storage._eng)
+        for table in reversed(meta.sorted_tables):
+            table.drop(self.storage._eng)
+
+    def test_table_names(self):
+        meta = sql.MetaData()
+        meta.reflect(bind=self.storage._eng)
+        print(meta.tables.keys())
+        self.assertIn('my_usage_language_hourly', meta.tables.keys())
+        self.assertIn('my_usage_remote_monthly', meta.tables.keys())
+        self.assertIn('my_usage_language_monthly', meta.tables.keys())
+        self.assertIn('my_usage_url_monthly', meta.tables.keys())
+        self.assertIn('my_usage_useragent_hourly', meta.tables.keys())
+        self.assertIn('my_usage_server_hourly', meta.tables.keys())
+        self.assertIn('my_usage_remote_hourly', meta.tables.keys())
+        self.assertIn('my_usage_remote_daily', meta.tables.keys())
+        self.assertIn('my_usage_language_daily', meta.tables.keys())
+        self.assertIn('my_usage_url_hourly', meta.tables.keys())
+        self.assertIn('my_usage_useragent_monthly', meta.tables.keys())
+        self.assertIn('my_usage_useragent_daily', meta.tables.keys())
+        self.assertIn('my_usage_url_daily', meta.tables.keys())
+        self.assertIn('my_usage_server_daily', meta.tables.keys())
+        self.assertIn('my_usage_server_monthly', meta.tables.keys())
+
+    def test_basic_suite(self):
+        self.client.get('/')  # call 3 times to make sure upsert works
+        self.client.get('/')
+        self.client.get('/')
+        con = self.storage._eng.connect()
+
+        # URL
+
+        table = self.storage.sum_tables["url_hourly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_hour)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_hour
+        assert result[1] == u'http://localhost/'
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["url_daily"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_day)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_day
+        assert result[1] == u'http://localhost/'
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["url_monthly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_month)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_month
+        assert result[1] == u'http://localhost/'
+        assert result[2] == 3
+        assert result[3] == 18
+
+        # REMOTE IP
+
+        table = self.storage.sum_tables["remote_hourly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_hour)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_hour
+        assert result[1] == "127.0.0.1"
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["remote_daily"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_day)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_day
+        assert result[1] == "127.0.0.1"
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["remote_monthly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_month)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_month
+        assert result[1] == "127.0.0.1"
+        assert result[2] == 3
+        assert result[3] == 18
+
+        # USER AGENT
+
+        table = self.storage.sum_tables["useragent_hourly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_hour)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_hour
+        assert result[1].startswith("werkzeug/")
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["useragent_daily"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_day)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_day
+        assert result[1].startswith("werkzeug/")
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["useragent_monthly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_month)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_month
+        assert result[1].startswith("werkzeug/")
+        assert result[2] == 3
+        assert result[3] == 18
+
+        # LANGUAGE
+
+        table = self.storage.sum_tables["language_hourly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_hour)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_hour
+        assert result[1] is None  # the werkzeug test client does not have a language
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["language_daily"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_day)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_day
+        assert result[1] is None
+        assert result[2] == 3
+        assert result[3] == 18
+
+
+        table = self.storage.sum_tables["language_monthly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_month)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_month
+        assert result[1] is None
+        assert result[2] == 3
+        assert result[3] == 18
+
+        # WHOLE SERVER
+
+        table = self.storage.sum_tables["server_hourly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_hour)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_hour
+        assert result[1] == self.app.name
+        assert result[2] == 3
+        assert result[3] == 18
+
+
+        table = self.storage.sum_tables["server_daily"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_day)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_day
+        assert result[1] == self.app.name
+        assert result[2] == 3
+        assert result[3] == 18
+
+        table = self.storage.sum_tables["server_monthly"]
+        s = sql \
+            .select([table]) \
+            .where(table.c.date==self.fake_month)
+        result = con.execute(s).fetchone()
+        assert result is not None
+        assert result[0] == self.fake_month
+        assert result[1] == self.app.name
+        assert result[2] == 3
+        assert result[3] == 18

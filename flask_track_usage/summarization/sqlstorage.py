@@ -7,10 +7,16 @@ except ImportError:
 
 try:
     import psycopg2
-    from sqlalchemy.dialects.postgresql import insert
+    from sqlalchemy.dialects.postgresql import insert as p_insert
     HAS_POSTGRES = True
 except ImportError:
     HAS_POSTGRES = False
+
+try:
+    from sqlalchemy.dialects.mysql import insert as m_insert
+    HAS_MYSQL = True
+except ImportError:
+    HAS_MYSQL = False
 
 
 def _check_environment(**kwargs):
@@ -36,24 +42,50 @@ def trim_times(unix_timestamp):
 
 
 def increment(con, table, dt, data, **values):
+    """
+    Insert or update the table row. This function used a single statement
+    to update on conflict for Postgres but Mysql doesn't use the same
+    type of update on duplicate. So it's either import a module each time
+    or query the database first to see if the value is there then insert a
+    new row or update an existing row.
+    """
+
+    if table.bind.name == 'mysql':
+        insert = m_insert
+        func = 'on_duplicate_key_update'
+        update_args = {
+            'hits': table.c.hits + 1,
+            'transfer': table.c.transfer + data['content_length']
+        }
+
+    elif table.bind.name == 'postgres':
+        insert = p_insert
+        func = 'on_conflict_do_update'
+        update_args = {
+            'index_elements': ['date'],
+            'set_': dict(
+                hits=table.c.hits + 1,
+                transfer=table.c.transfer + data['content_length']
+            )
+        }
+
+    else:
+        raise NotImplementedError("Only MySQL and PostgreSQL currently supported")
+
     stmt = insert(table).values(
         date=dt,
         hits=1,
         transfer=data['content_length'],
         **values
-    ).on_conflict_do_update(
-        index_elements=['date'],
-        set_=dict(
-            hits=table.c.hits + 1,
-            transfer=table.c.transfer + data['content_length']
-        )
     )
-    con.execute(stmt)
+
+    dup_stmt = getattr(stmt, func)(**update_args)
+    con.execute(dup_stmt)
 
 
 def create_tables(table_list, **kwargs):
     self = kwargs["_parent_self"]
-    with self._eng.begin() as self._con:
+    with self._eng.connect() as self._con:
         for base_sum_table_name in table_list:
             key_field, _ = base_sum_table_name.split("_")
             sum_table_name = "{}_{}".format(
@@ -68,6 +100,8 @@ def create_tables(table_list, **kwargs):
                     sql.Column('hits', sql.Integer),
                     sql.Column('transfer', sql.Integer)
                 )
+                # Create the table if it does not exist
+                self.sum_tables[base_sum_table_name].create(bind=self._eng)
             else:
                 self._metadata.reflect(bind=self._eng)
                 self.sum_tables[base_sum_table_name] = (
@@ -94,9 +128,9 @@ else:
     def sumUrl(**kwargs):
         if not _check_environment(**kwargs):
             return
-        if not _check_postgresql(**kwargs):
-            raise NotImplementedError("Only PostgreSQL currently supported")
-            return
+        # if not _check_sqlstorage(**kwargs):
+        #     raise NotImplementedError("Only PostgreSQL currently supported")
+        #     return
 
         hour, day, month = trim_times(kwargs['date'])
         x = kwargs["_parent_self"]
@@ -146,9 +180,9 @@ else:
     def sumRemote(**kwargs):
         if not _check_environment(**kwargs):
             return
-        if not _check_postgresql(**kwargs):
-            raise NotImplementedError("Only PostgreSQL currently supported")
-            return
+        # if not _check_postgresql(**kwargs):
+        #     raise NotImplementedError("Only PostgreSQL currently supported")
+        #     return
 
         hour, day, month = trim_times(kwargs['date'])
         x = kwargs["_parent_self"]
@@ -198,9 +232,9 @@ else:
     def sumUserAgent(**kwargs):
         if not _check_environment(**kwargs):
             return
-        if not _check_postgresql(**kwargs):
-            raise NotImplementedError("Only PostgreSQL currently supported")
-            return
+        # if not _check_postgresql(**kwargs):
+        #     raise NotImplementedError("Only PostgreSQL currently supported")
+        #     return
 
         hour, day, month = trim_times(kwargs['date'])
         x = kwargs["_parent_self"]
@@ -250,9 +284,9 @@ else:
     def sumLanguage(**kwargs):
         if not _check_environment(**kwargs):
             return
-        if not _check_postgresql(**kwargs):
-            raise NotImplementedError("Only PostgreSQL currently supported")
-            return
+        # if not _check_postgresql(**kwargs):
+        #     raise NotImplementedError("Only PostgreSQL currently supported")
+        #     return
 
         hour, day, month = trim_times(kwargs['date'])
         x = kwargs["_parent_self"]
@@ -301,9 +335,9 @@ else:
     def sumServer(**kwargs):
         if not _check_environment(**kwargs):
             return
-        if not _check_postgresql(**kwargs):
-            raise NotImplementedError("Only PostgreSQL currently supported")
-            return
+        # if not _check_postgresql(**kwargs):
+        #     raise NotImplementedError("Only PostgreSQL currently supported")
+        #     return
 
         hour, day, month = trim_times(kwargs['date'])
         x = kwargs["_parent_self"]
