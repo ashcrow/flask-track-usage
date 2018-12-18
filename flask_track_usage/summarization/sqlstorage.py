@@ -76,6 +76,7 @@ def increment(con, table, dt, data, **values):
         date=dt,
         hits=1,
         transfer=data['content_length'],
+        track_var=data['track_var'],
         **values
     )
 
@@ -97,8 +98,10 @@ def create_tables(table_list, **kwargs):
                     self._metadata,
                     sql.Column('date', sql.DateTime, primary_key=True),
                     sql.Column(key_field, sql.String(128)),
+                    sql.Column('track_var', sql.String(128)),
                     sql.Column('hits', sql.Integer),
-                    sql.Column('transfer', sql.Integer)
+                    sql.Column('transfer', sql.Integer),
+                    sql.UniqueConstraint('date', 'track_var')
                 )
                 # Create the table if it does not exist
                 self.sum_tables[base_sum_table_name].create(bind=self._eng)
