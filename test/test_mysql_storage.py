@@ -175,7 +175,6 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
     def test_table_names(self):
         meta = sql.MetaData()
         meta.reflect(bind=self.storage._eng)
-        print(meta.tables.keys())
         self.assertIn('my_usage_language_hourly', meta.tables.keys())
         self.assertIn('my_usage_remote_monthly', meta.tables.keys())
         self.assertIn('my_usage_language_monthly', meta.tables.keys())
@@ -208,8 +207,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_hour
         assert result[1] == u'http://localhost/'
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
         table = self.storage.sum_tables["url_daily"]
         s = sql \
@@ -219,8 +219,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_day
         assert result[1] == u'http://localhost/'
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
         table = self.storage.sum_tables["url_monthly"]
         s = sql \
@@ -230,8 +231,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_month
         assert result[1] == u'http://localhost/'
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
         # REMOTE IP
 
@@ -243,8 +245,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_hour
         assert result[1] == "127.0.0.1"
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
         table = self.storage.sum_tables["remote_daily"]
         s = sql \
@@ -254,8 +257,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_day
         assert result[1] == "127.0.0.1"
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
         table = self.storage.sum_tables["remote_monthly"]
         s = sql \
@@ -265,8 +269,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_month
         assert result[1] == "127.0.0.1"
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
         # USER AGENT
 
@@ -278,8 +283,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_hour
         assert result[1].startswith("werkzeug/")
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
         table = self.storage.sum_tables["useragent_daily"]
         s = sql \
@@ -289,8 +295,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_day
         assert result[1].startswith("werkzeug/")
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
         table = self.storage.sum_tables["useragent_monthly"]
         s = sql \
@@ -300,8 +307,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_month
         assert result[1].startswith("werkzeug/")
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
         # LANGUAGE
 
@@ -313,8 +321,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_hour
         assert result[1] is None  # the werkzeug test client does not have a language
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
         table = self.storage.sum_tables["language_daily"]
         s = sql \
@@ -324,8 +333,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_day
         assert result[1] is None
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
 
         table = self.storage.sum_tables["language_monthly"]
@@ -336,8 +346,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_month
         assert result[1] is None
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
         # WHOLE SERVER
 
@@ -349,8 +360,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_hour
         assert result[1] == self.app.name
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
 
         table = self.storage.sum_tables["server_daily"]
@@ -361,8 +373,9 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_day
         assert result[1] == self.app.name
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
 
         table = self.storage.sum_tables["server_monthly"]
         s = sql \
@@ -372,5 +385,6 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         assert result is not None
         assert result[0] == self.fake_month
         assert result[1] == self.app.name
-        assert result[2] == 3
-        assert result[3] == 18
+        assert result[2] == '{}'
+        assert result[3] == 3
+        assert result[4] == 18
