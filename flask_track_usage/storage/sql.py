@@ -31,11 +31,12 @@
 """
 SQL storage based on SQLAlchemy
 """
-# from flask import current_app
+
 from . import Storage
 import json
 import datetime
 import sqlalchemy as sql
+import inspect
 
 class SQLStorage(Storage):
     """
@@ -218,7 +219,7 @@ class SQLStorage(Storage):
         .. versionchanged:: 1.1.0
            xforwardfor column added directly after remote_addr
         """
-        import sqlalchemy as sql
+        
         page = max(1, page)   # min bound
         if end_date is None:
             end_date = datetime.datetime.utcnow()
@@ -234,3 +235,37 @@ class SQLStorage(Storage):
             res = con.execute(stmt)
             result = res.fetchall()
         return result
+
+    def get_sum(self, hook, start_date=None, end_date=None, limit=500, page=1, target=None):
+        """
+        Queries a subtending hook for summarization data.
+
+        :Parameters:
+           - 'hook': the hook 'class' or it's name as a string
+           - `start_date`: datetime.datetime representation of starting date
+           - `end_date`: datetime.datetime representation of ending date
+           - `limit`: The max amount of results to return
+           - `page`: Result page number limited by `limit` number in a page
+           - 'target': search string to limit results; meaning depend on hook
+
+
+        .. versionchanged:: 2.0.0
+        """
+        if inspect.isclass(hook):
+            hook_name = hook.__name__
+        else:
+            hook_name = str(hook)
+        for h in self._post_storage_hooks:
+            if h.__class__.__name__ == hook_name:
+                return h.get_sum(
+                    start_date=start_date,
+                    end_date=end_date,
+                    limit=limit,
+                    page=page,
+                    target=target,
+                    _parent_class_name=self.__class__.__name__,
+                    _parent_self=self
+                )
+        raise NotImplementedError(
+            'Cannot find hook named "{}"'.format(hook_name)
+        )

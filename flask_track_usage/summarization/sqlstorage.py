@@ -1,4 +1,5 @@
 import datetime
+
 try:
     import sqlalchemy as sql
     HAS_SQLALCHEMY = True
@@ -49,8 +50,16 @@ def increment(con, table, dt, data, **values):
     or query the database first to see if the value is there then insert a
     new row or update an existing row.
     """
+    
+    # determine the connection name, con may always have this information
+    if table.bind:
+        name = table.bind.name
+    elif con.engine:
+        name = con.engine.name
+    else:
+        raise ValueError('Could not determine the name of the sqlalchemy connection')
 
-    if table.bind.name == 'mysql':
+    if name == 'mysql':
         insert = m_insert
         func = 'on_duplicate_key_update'
         update_args = {
@@ -58,11 +67,11 @@ def increment(con, table, dt, data, **values):
             'transfer': table.c.transfer + data['content_length']
         }
 
-    elif table.bind.name == 'postgres':
+    elif name == 'postgres':
         insert = p_insert
         func = 'on_conflict_do_update'
         update_args = {
-            'index_elements': ['date'],
+            'index_elements': ['datetime'],
             'set_': dict(
                 hits=table.c.hits + 1,
                 transfer=table.c.transfer + data['content_length']
@@ -73,7 +82,7 @@ def increment(con, table, dt, data, **values):
         raise NotImplementedError("Only MySQL and PostgreSQL currently supported")
 
     stmt = insert(table).values(
-        date=dt,
+        datetime=dt,
         hits=1,
         transfer=data['content_length'],
         track_var=data['track_var'],
@@ -96,12 +105,12 @@ def create_tables(table_list, **kwargs):
                 self.sum_tables[base_sum_table_name] = sql.Table(
                     sum_table_name,
                     self._metadata,
-                    sql.Column('date', sql.DateTime, primary_key=True),
+                    sql.Column('datetime', sql.DateTime, primary_key=True),
                     sql.Column(key_field, sql.String(128)),
                     sql.Column('track_var', sql.String(128)),
                     sql.Column('hits', sql.Integer),
                     sql.Column('transfer', sql.Integer),
-                    sql.UniqueConstraint('date', 'track_var')
+                    sql.UniqueConstraint('datetime', 'track_var')
                 )
                 # Create the table if it does not exist
                 self.sum_tables[base_sum_table_name].create(bind=self._eng)
@@ -110,6 +119,36 @@ def create_tables(table_list, **kwargs):
                 self.sum_tables[base_sum_table_name] = (
                     self._metadata.tables[sum_table_name])
 
+def generic_get_sum(class_dict, key, start_date=None, end_date=None, limit=500,
+                    page=1, target=None, _parent_class_name=None, _parent_self=None):
+    # note: for mongoegine, we can ignore _parent* parms as the module
+    # is global
+    
+    final = {}
+    query = {}
+    if end_date is None:
+        end_date = datetime.datetime.utcnow()
+    if start_date is None:
+        start_date = datetime.datetime(1970, 1, 1)
+    if target is not None:
+        query[key] = target
+
+    with _parent_self._eng.begin() as con:
+        for period in class_dict.keys():
+            first = limit * (page - 1)
+            last = limit * page
+
+            _table = class_dict[period]
+            stmt = sql.select([_table]).where(
+                _table.c.datetime.between(start_date, end_date)).limit(
+                    limit).offset(
+                    limit * (page - 1)).order_by(
+                        sql.desc(_table.c.datetime))
+            res = con.execute(stmt)
+            result = res.fetchall()
+
+            final[period] = result
+    return final
 
 ######################################################
 #
@@ -161,6 +200,11 @@ else:
             )
 
         return
+
+    def sumUrl_get_sum(**kwargs):
+        x = kwargs["_parent_self"]
+        class_dict = {v:x.sum_tables[v] for v in ['url_hourly', 'url_daily', 'url_monthly']}
+        return generic_get_sum(class_dict, "url", **kwargs)
 
 
 ######################################################
