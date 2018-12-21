@@ -88,7 +88,7 @@ class TestMySQLStorage(FlaskTrackUsageTestCase):
         assert result['ip_info'] is None
         assert result['path'] == '/'
         assert result['speed'] > 0
-        assert type(result['datetime']) is datetime.datetime
+        assert type(result['date']) is datetime.datetime
         assert result['username'] is None
         assert result['track_var'] == '{}'
 
@@ -211,7 +211,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["url_hourly"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_hour)
+            .where(table.c.date==self.fake_hour)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_hour
@@ -223,7 +223,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["url_daily"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_day)
+            .where(table.c.date==self.fake_day)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_day
@@ -235,7 +235,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["url_monthly"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_month)
+            .where(table.c.date==self.fake_month)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_month
@@ -249,7 +249,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["remote_hourly"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_hour)
+            .where(table.c.date==self.fake_hour)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_hour
@@ -261,7 +261,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["remote_daily"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_day)
+            .where(table.c.date==self.fake_day)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_day
@@ -273,7 +273,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["remote_monthly"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_month)
+            .where(table.c.date==self.fake_month)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_month
@@ -287,7 +287,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["useragent_hourly"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_hour)
+            .where(table.c.date==self.fake_hour)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_hour
@@ -299,7 +299,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["useragent_daily"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_day)
+            .where(table.c.date==self.fake_day)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_day
@@ -311,7 +311,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["useragent_monthly"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_month)
+            .where(table.c.date==self.fake_month)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_month
@@ -325,7 +325,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["language_hourly"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_hour)
+            .where(table.c.date==self.fake_hour)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_hour
@@ -337,7 +337,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["language_daily"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_day)
+            .where(table.c.date==self.fake_day)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_day
@@ -350,7 +350,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["language_monthly"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_month)
+            .where(table.c.date==self.fake_month)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_month
@@ -364,7 +364,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["server_hourly"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_hour)
+            .where(table.c.date==self.fake_hour)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_hour
@@ -377,7 +377,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["server_daily"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_day)
+            .where(table.c.date==self.fake_day)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_day
@@ -389,7 +389,7 @@ class TestMySQLStorageSummary(FlaskTrackUsageTestCase):
         table = self.storage.sum_tables["server_monthly"]
         s = sql \
             .select([table]) \
-            .where(table.c.datetime==self.fake_month)
+            .where(table.c.date==self.fake_month)
         result = con.execute(s).fetchone()
         assert result is not None
         assert result[0] == self.fake_month
