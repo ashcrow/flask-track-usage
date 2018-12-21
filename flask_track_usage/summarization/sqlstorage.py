@@ -71,7 +71,7 @@ def increment(con, table, dt, data, **values):
         insert = p_insert
         func = 'on_conflict_do_update'
         update_args = {
-            'index_elements': ['datetime'],
+            'index_elements': ['date'],
             'set_': dict(
                 hits=table.c.hits + 1,
                 transfer=table.c.transfer + data['content_length']
