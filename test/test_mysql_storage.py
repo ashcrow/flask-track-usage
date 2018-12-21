@@ -30,8 +30,7 @@ from flask_track_usage.summarization import (
 if 'SQLALCHEMY_DATABASE_URI_TEST' in os.environ.keys():
     SQLALCHEMY_DATABASE_URI = os.environ['SQLALCHEMY_DATABASE_URI_TEST']
 else:
-    SQLALCHEMY_DATABASE_URI = "mysql+mysqldb://scott:avalanche@localhost/test_flask_usage"
-    # SQLALCHEMY_DATABASE_URI = "mysql+mysqldb://travis@localhost/track_usage_test"
+    SQLALCHEMY_DATABASE_URI = "mysql+mysqldb://travis@localhost/track_usage_test"
 
 @unittest.skipUnless(HAS_MYSQL, "Requires mysql-python package")
 @unittest.skipUnless((HAS_SQLALCHEMY), "Requires SQLAlchemy")
