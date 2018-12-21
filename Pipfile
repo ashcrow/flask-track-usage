@@ -5,6 +5,8 @@ verify_ssl = true
 
 [dev-packages]
 sphinx = "*"
+pep8 = "*"
+coverage = "*"
 
 [packages]
 six = "*"
