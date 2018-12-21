@@ -67,7 +67,7 @@ def increment(con, table, dt, data, **values):
             'transfer': table.c.transfer + data['content_length']
         }
 
-    elif name == 'postgres':
+    elif name == 'postgresql':
         insert = p_insert
         func = 'on_conflict_do_update'
         update_args = {
