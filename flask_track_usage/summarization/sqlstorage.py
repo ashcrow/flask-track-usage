@@ -82,7 +82,7 @@ def increment(con, table, dt, data, **values):
         raise NotImplementedError("Only MySQL and PostgreSQL currently supported")
 
     stmt = insert(table).values(
-        datetime=dt,
+        date=dt,
         hits=1,
         transfer=data['content_length'],
         track_var=data['track_var'],
@@ -105,12 +105,12 @@ def create_tables(table_list, **kwargs):
                 self.sum_tables[base_sum_table_name] = sql.Table(
                     sum_table_name,
                     self._metadata,
-                    sql.Column('datetime', sql.DateTime, primary_key=True),
+                    sql.Column('date', sql.DateTime, primary_key=True),
                     sql.Column(key_field, sql.String(128)),
                     sql.Column('track_var', sql.String(128)),
                     sql.Column('hits', sql.Integer),
                     sql.Column('transfer', sql.Integer),
-                    sql.UniqueConstraint('datetime', 'track_var')
+                    sql.UniqueConstraint('date', 'track_var')
                 )
                 # Create the table if it does not exist
                 self.sum_tables[base_sum_table_name].create(bind=self._eng)
@@ -140,10 +140,10 @@ def generic_get_sum(class_dict, key, start_date=None, end_date=None, limit=500,
 
             _table = class_dict[period]
             stmt = sql.select([_table]).where(
-                _table.c.datetime.between(start_date, end_date)).limit(
+                _table.c.date.between(start_date, end_date)).limit(
                     limit).offset(
                     limit * (page - 1)).order_by(
-                        sql.desc(_table.c.datetime))
+                        sql.desc(_table.c.date))
             res = con.execute(stmt)
             result = res.fetchall()
 
