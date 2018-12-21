@@ -68,7 +68,7 @@ class _RedisStorage(Storage):
             'speed': data["speed"] if 'speed' in data else None,
             'username': data["username"] if 'username' in data else None,
             'track_var': data["track_var"] if 'track_var' in data else None,
-            'datetime': str(utcdatetime) or None
+            'date': str(utcdatetime) or None
         }
         struct_name = self._construct_struct_name(utcdatetime)
         # create a set which will be used as an index, in order not to use

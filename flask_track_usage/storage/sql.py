@@ -111,7 +111,7 @@ class SQLStorage(Storage):
                     sql.Column('ip_info', sql.String(1024)),
                     sql.Column('path', sql.String(32)),
                     sql.Column('speed', sql.Float),
-                    sql.Column('datetime', sql.DateTime),
+                    sql.Column('date', sql.DateTime),
                     sql.Column('username', sql.String(128)),
                     sql.Column('track_var', sql.String(128))
                 )
@@ -161,7 +161,7 @@ class SQLStorage(Storage):
                 ip_info=ip_info_str,
                 path=data["path"],
                 speed=data["speed"],
-                datetime=utcdatetime,
+                date=utcdatetime,
                 username=data["username"],
                 track_var=json.dumps(data["track_var"], ensure_ascii=False)
             )
@@ -200,7 +200,7 @@ class SQLStorage(Storage):
                 'ip_info': r[12],
                 'path': r[13],
                 'speed': r[14],
-                'datetime': r[15],
+                'date': r[15],
                 'username': r[16],
                 'track_var': r[17] if r[17] != '{}' else None
             } for r in raw_data]
@@ -228,10 +228,10 @@ class SQLStorage(Storage):
         with self._eng.begin() as con:
             _table = self.track_table
             stmt = sql.select([self.track_table]).where(
-                _table.c.datetime.between(start_date, end_date)).limit(
+                _table.c.date.between(start_date, end_date)).limit(
                     limit).offset(
                     limit * (page - 1)).order_by(
-                        sql.desc(self.track_table.c.datetime))
+                        sql.desc(self.track_table.c.date))
             res = con.execute(stmt)
             result = res.fetchall()
         return result
