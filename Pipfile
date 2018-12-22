@@ -7,6 +7,7 @@ verify_ssl = true
 sphinx = "*"
 pep8 = "*"
 coverage = "*"
+pylint = "*"
 
 [packages]
 six = "*"
