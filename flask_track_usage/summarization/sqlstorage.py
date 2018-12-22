@@ -101,16 +101,15 @@ def create_tables(table_list, **kwargs):
             sum_table_name = "{}_{}".format(
                 self.table_name, base_sum_table_name
             )
-            if not self._con.dialect.has_table(self._con, sum_table_name):
+            if sum_table_name not in self._metadata.tables.keys():
                 self.sum_tables[base_sum_table_name] = sql.Table(
                     sum_table_name,
                     self._metadata,
                     sql.Column('date', sql.DateTime, primary_key=True),
                     sql.Column(key_field, sql.String(128)),
-                    sql.Column('track_var', sql.String(128)),
+                    sql.Column('track_var', sql.String(128), primary_key=True),
                     sql.Column('hits', sql.Integer),
-                    sql.Column('transfer', sql.Integer),
-                    sql.UniqueConstraint('date', 'track_var')
+                    sql.Column('transfer', sql.Integer)
                 )
                 # Create the table if it does not exist
                 self.sum_tables[base_sum_table_name].create(bind=self._eng)

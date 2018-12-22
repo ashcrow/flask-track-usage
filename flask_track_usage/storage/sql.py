@@ -93,7 +93,7 @@ class SQLStorage(Storage):
         self.sum_tables = {}
         self._con = None
         with self._eng.connect() as self._con:
-            if not self._con.dialect.has_table(self._con, table_name):
+            if table_name not in self._metadata.tables.keys():
                 self.track_table = sql.Table(
                     table_name, self._metadata,
                     sql.Column('id', sql.Integer, primary_key=True),
