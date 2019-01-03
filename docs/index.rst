@@ -58,7 +58,7 @@ Usage
     app.config['TRACK_USAGE_INCLUDE_OR_EXCLUDE_VIEWS'] = 'include'
 
     # We will just print out the data for the example
-    from flask.ext.track_usage import TrackUsage
+    from flask_track_usage import TrackUsage
 
     # We will just print out the data for the example
     from flask_track_usage.storage.printer import PrintWriter
