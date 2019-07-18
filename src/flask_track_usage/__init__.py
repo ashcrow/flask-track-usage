@@ -199,7 +199,10 @@ class TrackUsage(object):
             data['ip_info'] = ip_info
 
         for storage in self._storages:
-            storage(data)
+            try:
+                storage(data)
+            except:
+                pass
         return response
 
     def exclude(self, view):
