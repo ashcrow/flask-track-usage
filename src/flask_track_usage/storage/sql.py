@@ -135,7 +135,7 @@ class SQLStorage(Storage):
             t = {}
             for key in data["ip_info"]:
                 t[key] = data["ip_info"][key]
-                if len(json.dumps(t)) > 128:
+                if not len(json.dumps(t)) < 1024:
                     del t[key]
                     break
             ip_info_str = json.dumps(t)
