@@ -76,7 +76,7 @@ class _RedisStorage(Storage):
         # Always try to add to avoid a network call
         self.db.sadd("usage_data_keys", struct_name)
         previous = len(self.db.hkeys(struct_name))
-        self.db.hset(struct_name, previous + 1, d)
+        self.db.hset(struct_name, previous + 1, json.dumps(d))
 
     def _get_usage(self, start_date=None, end_date=None, limit=500, page=1):
         """
@@ -155,7 +155,7 @@ class RedisStorage(_RedisStorage):
     .. versionadded:: 1.1.1
     """
 
-    def set_up(self, host='127.0.0.1', port=6379, password=None):
+    def set_up(self, host='127.0.0.1', port=6379, password=None, url=None):
         """
         Sets up redis and checks that you have connected to it.
 
@@ -165,6 +165,9 @@ class RedisStorage(_RedisStorage):
            - `password`: Optional password to authenticate with.
         """
         from redis import Redis
-        self.db = Redis.from_url("redis://{0}:{1}".format(host, str(port)))
+        if url:
+            self.db = Redis.from_url(url)
+        else:
+            self.db = Redis.from_url("redis://{0}:{1}".format(host, str(port)))
         assert self.db is not None
         assert self.db.ping() is True
