@@ -184,6 +184,8 @@ class TrackUsage(object):
         }
         if ctx.request.authorization:
             data['username'] = str(ctx.request.authorization.username)
+        elif getattr(ctx, 'user', None):
+            data['username'] = str(ctx.user)
         if self._use_freegeoip:
             clean_ip = quote_plus(str(ctx.request.remote_addr))
             if '{ip}' in self._freegeoip_endpoint:
