@@ -188,7 +188,7 @@ class TrackUsage(object):
         }
         if ctx.request.authorization:
             data['username'] = str(ctx.request.authorization.username)
-        elif getattr(self.app, 'login_manager', None):
+        elif getattr(self.app, 'login_manager', None) and current_user and not current_user.is_anonymous:
             data['username'] = str(current_user)
         if self._use_freegeoip:
             clean_ip = quote_plus(str(ctx.request.remote_addr))
