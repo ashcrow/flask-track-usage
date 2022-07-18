@@ -76,6 +76,7 @@ class FlaskTrackUsageTestCase(unittest.TestCase):
         def index():
             return "Hello!"
 
+
 class FlaskTrackUsageTestCaseGeoIP(unittest.TestCase):
     """
     Master TestCase for unittesting Flask-TrackUsage.
