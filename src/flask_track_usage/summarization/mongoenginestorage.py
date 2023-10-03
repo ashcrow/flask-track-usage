@@ -42,8 +42,9 @@ def increment(class_dict, src, dest, target_list):
             if dest:
                 doc[dest] = value
         doc.hits += 1
-        doc.transfer += src.content_length
-        doc.save()
+        if src.content_length:
+            doc.transfer += src.content_length
+            doc.save()
 
 
 def generic_get_sum(
